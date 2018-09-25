@@ -1,5 +1,7 @@
 # RealTimePassengerInformation
 
+[![Build Status](https://travis-ci.org/m-harrison/RealTimePassengerInformation.svg?branch=master)](https://travis-ci.org/m-harrison/RealTimePassengerInformation)
+
 An F# implementation of an unofficial client library for the RTPI service provided for Dublin public transport by the National Transport Authority.
 
 ## Acknowledgements
