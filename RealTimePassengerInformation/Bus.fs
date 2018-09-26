@@ -2,23 +2,18 @@ namespace RealTimePassengerInformation
 
 open System
 open System.Globalization
+open System.Runtime.CompilerServices
 
 module Bus =
     module Service =
-        /// <summary>
-        /// Union of available endpoints for the real-time bus service.
-        /// </summary>
-        type Endpoint =
+        type internal Endpoint =
             | BusStopInformation
             | OperatorInformation
             | RealTimeBusInformation
             | RouteListInformation
             | TimetableInformation
 
-        /// <summary>
-        /// Enumeration of possible response codes from the service.
-        /// </summary>
-        type ResponseCode =
+        type internal ResponseCode =
             | Success               = 0
             | NoResults             = 1
             | MissingParameter      = 2
@@ -29,69 +24,33 @@ module Bus =
         /// <summary>
         /// Default base URI that the real-time bus service is deployed to.
         /// </summary>
-        let defaultServiceEndpoint = "https://data.smartdublin.ie/cgi-bin/rtpi"
+        let public defaultServiceEndpoint = "https://data.smartdublin.ie/cgi-bin/rtpi"
 
-        /// <summary>
-        /// Recursively reduces parameters bound to Option monad.
-        /// </summary>
-        /// <param name="parameters">
-        /// Parameters to reduce.
-        /// </param>
-        /// <returns>
-        /// Only parameters where there was 'Some value' with value
-        /// pulled up form the monad.
-        /// </returns>
-        let rec reduceParameters parameters =
+        let private inv = CultureInfo.InvariantCulture
+
+        let rec internal reduceParameters parameters =
             match parameters with
             | []                     -> []
             | (_, None)::ps          -> reduceParameters ps
             | (name, Some value)::ps -> (name,value)::(reduceParameters ps)
 
-        /// <summary>
-        /// Builds the absolute URI with parameters to call and appends JSON
-        /// format parameter.
-        /// </summary>
-        /// <param name="baseUri">
-        /// Base URI the service was deployed to.
-        /// </param>
-        /// <param name="apiEndpoint">
-        /// Relative Endpoint union value for the particular REST method.
-        /// </param>
-        /// <param name="parameterKeyValueList">
-        /// (key,value) mapping of parameters to put in URI.
-        /// </param>
-        /// <returns>
-        /// URI to call for endpoint with parameters at deployed location.
-        /// </returns>
-        let buildUri (baseUri:string) apiEndpoint parameterKeyValueList =
-            // Helper to format key, value pairs into URI parameter terms.
+        let internal buildUri (baseUri:string) apiEndpoint parameters =
             let keyValueToParameterTerm ((key,value) : string * string) =
-                String.Format(
-                    CultureInfo.InvariantCulture, "{0}={1}", key, value)
+                String.Format(inv, "{0}={1}", key, value)
 
-            // Helper to tail-recursively join URI parameter terms into
-            // parameter string.
-            let rec joinParameterTerms acc terms =
-                match terms with
-                | []       ->
-                    String.Format(
-                            CultureInfo.InvariantCulture,
-                            "{0}{1}",
-                            acc,
-                            (keyValueToParameterTerm ("format","json")))
-                | term::ts ->
-                    joinParameterTerms
-                        (String.Format(
-                            CultureInfo.InvariantCulture, "{0}{1}&", acc, term))
-                        ts
-
-            // Map parameters to terms and build string via helpers.
-            List.map keyValueToParameterTerm parameterKeyValueList
-            |> joinParameterTerms ""
+            List.map keyValueToParameterTerm parameters
+            |> List.fold
+                (fun acc term ->
+                    String.Format(inv, "{0}{1}&", acc, term))
+                String.Empty
             |> fun parameterString ->
-                String.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0}/{1}?{2}",
+                String.Format(inv, "{0}{1}",
+                    parameterString, keyValueToParameterTerm ("format","json"))
+            |> fun parameterString ->
+                String.Format(inv, "{0}/{1}?{2}",
                     baseUri,
                     apiEndpoint.ToString().ToLowerInvariant(),
                     parameterString)
+
+[<assembly: InternalsVisibleTo("RealTimePassengerInformation.UnitTests")>]
+do()
