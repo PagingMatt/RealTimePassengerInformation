@@ -32,9 +32,9 @@ module Service =
             [<JsonProperty(PropertyName = "stopid", Required = Required.DisallowNull)>]
             val mutable StopId : int option
             [<JsonProperty(PropertyName = "route", Required = Required.DisallowNull)>]
-            val mutable Route : string
+            val mutable Route : string option
             [<JsonProperty(PropertyName = "numberofresults", Required = Required.Always)>]
-            val mutable NumberOfResults : string
+            val mutable NumberOfResults : int
             [<JsonProperty(PropertyName = "timestamp", Required = Required.Always)>]
             val mutable Timestamp : string
             [<JsonProperty(PropertyName = "results", Required = Required.Always)>]

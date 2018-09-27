@@ -1,8 +1,7 @@
 ﻿namespace RealTimePassengerInformation.UnitTests
 
-open System
+open System.Linq
 open Newtonsoft.Json
-open Newtonsoft.Json.Linq
 open RealTimePassengerInformation.Service
 open Xunit
 
@@ -16,6 +15,24 @@ module ServiceUnitTests =
     [<InlineData(ResponseCode.UnexpectedSystemError, 5)>]
     let internal ``ResponseCode_FromInt_AsExpected`` (code, number) =
         Assert.Equal(code, enum<ResponseCode>(number))
+
+    [<Fact>]
+    let internal ``ServiceResponse_ValidJson_DeserializedAsExpected`` () =
+        let json =
+            @"{
+                'errorcode':'0',
+                'errormessage':'',
+                'numberofresults':'1',
+                'timestamp':'',
+                'results':['result']
+            }"
+        let obj = JsonConvert.DeserializeObject<ServiceResponse<string>>(json)
+        Assert.Equal(0, obj.ErrorCode)
+        Assert.Equal("", obj.ErrorMessage)
+        Assert.Equal(1, obj.NumberOfResults)
+        Assert.Equal("", obj.Timestamp)
+        Assert.Single(obj.Results) |> ignore
+        Assert.Equal("result", obj.Results.FirstOrDefault())
 
     [<Fact>]
     let internal ``reduceParameters_EmptyList_ReturnsEmptyList`` () =
