@@ -27,7 +27,7 @@ module ServiceUnitTests =
                 'results':['result']
             }"
         let obj = JsonConvert.DeserializeObject<ServiceResponse<string>>(json)
-        Assert.Equal(0, obj.ErrorCode)
+        Assert.Equal(ResponseCode.Success, obj.ErrorCode)
         Assert.Equal("", obj.ErrorMessage)
         Assert.Equal(1, obj.NumberOfResults)
         Assert.Equal("", obj.Timestamp)

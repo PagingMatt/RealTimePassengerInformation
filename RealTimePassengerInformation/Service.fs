@@ -26,7 +26,7 @@ module Service =
     type internal ServiceResponse<'a> =
         struct
             [<JsonProperty(PropertyName = "errorcode", Required = Required.Always)>]
-            val mutable ErrorCode : int
+            val mutable ErrorCode : ResponseCode
             [<JsonProperty(PropertyName = "errormessage", Required = Required.Always)>]
             val mutable ErrorMessage : string
             [<JsonProperty(PropertyName = "stopid", Required = Required.DisallowNull)>]
