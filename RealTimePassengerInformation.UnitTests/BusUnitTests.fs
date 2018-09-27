@@ -69,6 +69,12 @@ module Bus =
             Assert.Equal(expectedUri, actualUri)
 
         [<Fact>]
+        let internal ``buildUri_RouteInformation_BuildsExpectedUri`` () =
+            let expectedUri = defaultServiceEndpoint + "/routeinformation?format=json"
+            let actualUri = buildUri defaultServiceEndpoint RouteInformation []
+            Assert.Equal(expectedUri, actualUri)
+
+        [<Fact>]
         let internal ``buildUri_RouteListInformation_BuildsExpectedUri`` () =
             let expectedUri = defaultServiceEndpoint + "/routelistinformation?format=json"
             let actualUri = buildUri defaultServiceEndpoint RouteListInformation []
