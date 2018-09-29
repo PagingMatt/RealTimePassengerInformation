@@ -2,7 +2,6 @@
 
 open System
 open System.Collections.Generic
-open System.Globalization
 open System.Net.Http
 open System.Runtime.CompilerServices
 open Newtonsoft.Json
@@ -78,7 +77,7 @@ module Service =
             | ScheduledDowntime = 4
             | UnexpectedSystemError = 5
 
-        type internal RouteStops =
+        type internal RouteStop =
             struct
                 [<JsonProperty(PropertyName = "stopid", Required = Required.Always)>]
                 val mutable StopId : string
@@ -198,16 +197,16 @@ module Service =
                 val mutable OperatorName : string
                 [<JsonProperty(PropertyName = "origin", Required = Required.Always)>]
                 val mutable Origin : string
-                [<JsonProperty(PropertyName = "origintranslated", Required = Required.Always)>]
-                val mutable OriginTranslated : string
+                [<JsonProperty(PropertyName = "originlocalized", Required = Required.Always)>]
+                val mutable OriginLocalized : string
                 [<JsonProperty(PropertyName = "destination", Required = Required.Always)>]
                 val mutable Destination : string
-                [<JsonProperty(PropertyName = "destinationtranslated", Required = Required.Always)>]
-                val mutable DestinationTranslated : string
+                [<JsonProperty(PropertyName = "destinationlocalized", Required = Required.Always)>]
+                val mutable DestinationLocalized : string
                 [<JsonProperty(PropertyName = "lastupdated", Required = Required.Always)>]
                 val mutable LastUpdated : string
                 [<JsonProperty(PropertyName = "stops", Required = Required.Always)>]
-                val mutable Stops : IEnumerable<RouteStops>
+                val mutable Stops : RouteStop list
             end
 
         type internal RouteListInformationModel =
@@ -258,7 +257,7 @@ module Service =
             : Result<ServiceResponseModel<'a>, ApiError> =
                 try
                     Ok (JsonConvert.DeserializeObject<ServiceResponseModel<'a>> j)
-                with :? JsonException -> Error ExternalServiceError
+                with :? JsonException -> Error InternalLibraryError
 
         let internal validateServiceResponseModel (m:ServiceResponseModel<'a>) =
             match m.ErrorCode with

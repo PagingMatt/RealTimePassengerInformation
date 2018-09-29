@@ -107,7 +107,7 @@ module Service =
         [<Theory>]
         [<InlineData(@"}")>]
         let internal ``deserializeServiceResponseModel_InvalidJson_ErrorInternalLibraryError`` json =
-            Assert.Equal(Error ExternalServiceError, deserializeServiceResponseModel json)
+            Assert.Equal(Error InternalLibraryError, deserializeServiceResponseModel json)
 
         [<Theory>]
         [<InlineData(@"{'errormessage':'','numberofresults':'1','timestamp':'','results':['a']}")>]
@@ -116,7 +116,7 @@ module Service =
         [<InlineData(@"{'errorcode':'0','errormessage':'','numberofresults':'1','results':['a']}")>]
         [<InlineData(@"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':''}")>]
         let internal ``deserializeServiceResponseModel_ValidJsonMissingRequiredField_ErrorInternalLibraryError`` json =
-            Assert.Equal(Error ExternalServiceError, deserializeServiceResponseModel json)
+            Assert.Equal(Error InternalLibraryError, deserializeServiceResponseModel json)
 
         [<Theory>]
         [<InlineData(@"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'','results':['a']}")>]
