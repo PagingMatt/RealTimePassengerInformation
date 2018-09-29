@@ -240,10 +240,10 @@ module Service =
                 val mutable ErrorCode : ResponseCode
                 [<JsonProperty(PropertyName = "errormessage", Required = Required.Always)>]
                 val mutable ErrorMessage : string
-                [<JsonProperty(PropertyName = "stopid", Required = Required.DisallowNull)>]
-                val mutable StopId : int option
-                [<JsonProperty(PropertyName = "route", Required = Required.DisallowNull)>]
-                val mutable Route : string option
+                [<JsonProperty(PropertyName = "stopid", Required = Required.Default)>]
+                val mutable StopId : Nullable<int>
+                [<JsonProperty(PropertyName = "route", Required = Required.Default)>]
+                val mutable Route : string
                 [<JsonProperty(PropertyName = "numberofresults", Required = Required.Always)>]
                 val mutable NumberOfResults : int
                 [<JsonProperty(PropertyName = "timestamp", Required = Required.Always)>]
