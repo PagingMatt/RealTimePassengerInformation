@@ -33,6 +33,8 @@ module Service =
             }
 
     module Endpoints =
+        open Shared.Formatting
+
         type internal Endpoint =
             | BusStopInformation
             | OperatorInformation
@@ -42,8 +44,6 @@ module Service =
             | TimetableInformation
 
         let internal defaultServiceEndpoint = "https://data.smartdublin.ie/cgi-bin/rtpi"
-
-        let private inv = CultureInfo.InvariantCulture
 
         let rec internal reduceParameters parameters =
             match parameters with
@@ -127,7 +127,7 @@ module Service =
                 [<JsonProperty(PropertyName = "lastupdated", Required = Required.Always)>]
                 val mutable LastUpdated : string
                 [<JsonProperty(PropertyName = "operators", Required = Required.Always)>]
-                val mutable Operators : IEnumerable<StopOperator>
+                val mutable Operators : StopOperator list
             end
 
         type internal FullTimetableBusInformationModel =
@@ -252,6 +252,8 @@ module Service =
                 val mutable Results : 'a list
             end
 
+        let internal serviceDateTimeFormat = "dd/MM/yyyy HH:mm:ss"
+
         let internal deserializeServiceResponseModel<'a> j
             : Result<ServiceResponseModel<'a>, ApiError> =
                 try
@@ -267,6 +269,11 @@ module Service =
             | ResponseCode.ScheduledDowntime     -> Error ExternalServiceError
             | ResponseCode.UnexpectedSystemError -> Error ExternalServiceError
             | _                                  -> Error InternalLibraryError
+
+        let internal validateSingleResult (results:'a list) =
+            match results with
+            | result::[] -> Ok result
+            | _          -> Error InternalLibraryError
 
 [<assembly: InternalsVisibleTo("RealTimePassengerInformation.UnitTests")>]
 do()

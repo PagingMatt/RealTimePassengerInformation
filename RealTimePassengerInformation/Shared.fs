@@ -17,3 +17,8 @@ module Shared =
                 | Ok value  -> return Ok (f value)
                 | Error err -> return (Error err)
             }
+
+    module Formatting =
+        open System.Globalization
+
+        let internal inv = CultureInfo.InvariantCulture

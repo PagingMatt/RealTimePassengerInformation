@@ -24,6 +24,8 @@ module Bus =
         | Saturday  = 6
 
     module BusStopInformation =
+        open Shared.Formatting
+
         type public BusStopOperator = {
             Name   : string;
             Routes : string list;
@@ -39,6 +41,31 @@ module Bus =
             LastUpdated     : DateTime;
             Operators       : BusStopOperator list;
         }
+
+        let internal make (m:BusStopInformationModel) = {
+            StopId = m.StopId
+            DisplayedStopId = m.DisplayStopId
+            ShortName = {
+                EnglishName = m.ShortName
+                IrishName = m.ShortNameLocalized
+            }
+            FullName = {
+                EnglishName = m.FullName
+                IrishName = m.FullNameLocalized
+            }
+            Latitude = m.Latitude
+            Longitude = m.Longitude
+            LastUpdated = DateTime.ParseExact(m.LastUpdated, serviceDateTimeFormat, inv)
+            Operators = List.map (fun (o:StopOperator) -> {Name = o.OperatorName; Routes = o.Routes}) m.Operators
+        }
+
+        let getBusStopInformation (stopId:int) : Async<Result<T, ApiError>> =
+            buildUri defaultServiceEndpoint BusStopInformation [("stopid",stopId.ToString())]
+            |> getEndpointContent defaultHandler
+            >>> deserializeServiceResponseModel<BusStopInformationModel>
+            >>> validateServiceResponseModel
+            >>> validateSingleResult
+            >>< make
 
     module OperatorInformation =
         type public Operator = {
