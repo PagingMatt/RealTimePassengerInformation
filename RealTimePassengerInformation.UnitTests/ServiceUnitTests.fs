@@ -3,15 +3,16 @@
 open System.Linq
 open Newtonsoft.Json
 open RealTimePassengerInformation.Service
+open RealTimePassengerInformation.Service.Models
 open Xunit
 
 module ServiceUnitTests =
     [<Theory>]
-    [<InlineData(ResponseCode.Success              , 0)>]
-    [<InlineData(ResponseCode.NoResults            , 1)>]
-    [<InlineData(ResponseCode.MissingParameter     , 2)>]
-    [<InlineData(ResponseCode.InvalidParameter     , 3)>]
-    [<InlineData(ResponseCode.ScheduledDowntime    , 4)>]
+    [<InlineData(ResponseCode.Success, 0)>]
+    [<InlineData(ResponseCode.NoResults, 1)>]
+    [<InlineData(ResponseCode.MissingParameter, 2)>]
+    [<InlineData(ResponseCode.InvalidParameter, 3)>]
+    [<InlineData(ResponseCode.ScheduledDowntime, 4)>]
     [<InlineData(ResponseCode.UnexpectedSystemError, 5)>]
     let internal ``ResponseCode_FromInt_AsExpected`` (code, number) =
         Assert.Equal(code, enum<ResponseCode>(number))
@@ -26,7 +27,7 @@ module ServiceUnitTests =
                 'timestamp':'',
                 'results':['result']
             }"
-        let obj = JsonConvert.DeserializeObject<ServiceResponse<string>>(json)
+        let obj = JsonConvert.DeserializeObject<ServiceResponseModel<string>>(json)
         Assert.Equal(ResponseCode.Success, obj.ErrorCode)
         Assert.Equal("", obj.ErrorMessage)
         Assert.Equal(1, obj.NumberOfResults)
