@@ -64,7 +64,7 @@ module Bus =
                     LastUpdated = parsedLastUpdated
                     Operators = List.map (fun (o:StopOperator) -> {Name = o.OperatorName; Routes = o.Routes}) m.Operators
                 }
-            with :? FormatException -> Error ExternalServiceError
+            with :? FormatException -> Error InternalLibraryError
 
         let getBusStopInformation (stopId:int) : Async<Result<T, ApiError>> =
             [("stopid",stopId.ToString())]
@@ -156,36 +156,40 @@ module Bus =
             Longitude = m.Longitude
         }
 
-        let internal make (m:RouteInformationModel) =
+        let internal make mapSucceeding (m:RouteInformationModel) =
+            let safeRecord = {
+                    OperatorName = m.OperatorName
+                    Origin = {
+                        EnglishName = m.Origin
+                        IrishName = m.OriginLocalized
+                    }
+                    Destination = {
+                        EnglishName = m.Destination
+                        IrishName = m.DestinationLocalized
+                    }
+                    LastUpdated = DateTime.MinValue
+                    Stops = List.map makeBusStopInformation m.Stops
+            }
+            if not(mapSucceeding) then (safeRecord,mapSucceeding) else
             try
                 let parsedLastUpdated =
                     DateTime.ParseExact(
                         m.LastUpdated, serviceDateTimeFormat,
                         inv)
-                Ok {
-                    OperatorName = m.OperatorName
-                    Origin = {
-                        EnglishName = m.Origin
-                        IrishName = m.OriginTranslated
-                    }
-                    Destination = {
-                        EnglishName = m.Destination
-                        IrishName = m.DestinationTranslated
-                    }
-                    LastUpdated = parsedLastUpdated
-                    Stops = List.map makeBusStopInformation m.Stops
-                }
-            with :? FormatException -> Error ExternalServiceError
+                {safeRecord with LastUpdated=parsedLastUpdated},mapSucceeding
+            with :? FormatException -> (safeRecord,false)
 
-        let public getRouteInformation (route:string) (operatorReferenceCode:string)
-            : Async<Result<T, ApiError>> =
-                [("route",route);("operator",operatorReferenceCode)]
+        let public getRouteInformation (route:string) (operatorReference:string)
+            : Async<Result<T list, ApiError>> =
+                [("routeid",route);("operator",operatorReference)]
                 |>buildUri defaultServiceEndpoint RouteInformation
                 |> getEndpointContent defaultHandler
                 >>> deserializeServiceResponseModel<RouteInformationModel>
                 >>> validateServiceResponseModel
-                >>> validateSingleResult
-                >>> make
+                >>< List.mapFold make true 
+                >>> fun (rs,mapSucceeded) ->
+                        if mapSucceeded then Ok rs
+                        else Error InternalLibraryError
 
     module RouteListInformation =
         type public T = {
