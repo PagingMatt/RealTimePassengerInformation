@@ -46,7 +46,7 @@ module Service =
     type internal StopOperator =
         struct
             [<JsonProperty(PropertyName = "name", Required = Required.Always)>]
-            val mutable Name : string
+            val mutable OperatorName : string
             [<JsonProperty(PropertyName = "routes", Required = Required.Always)>]
             val mutable Routes : string list
         end
@@ -160,7 +160,7 @@ module Service =
             [<JsonProperty(PropertyName = "operator", Required = Required.Always)>]
             val mutable OperatorReference : string
             [<JsonProperty(PropertyName = "route", Required = Required.Always)>]
-            val mutable OperatorName : string
+            val mutable Route : string
         end
 
     type internal TimetableBusInformation =
@@ -172,7 +172,7 @@ module Service =
             [<JsonProperty(PropertyName = "destinationlocalized", Required = Required.Always)>]
             val mutable DestinationLocalized : string
             [<JsonProperty(PropertyName = "operator", Required = Required.Always)>]
-            val mutable Operator : string
+            val mutable OperatorName : string
             [<JsonProperty(PropertyName = "lowfloorstatus", Required = Required.Always)>]
             val mutable LowFloorStatus : string
             [<JsonProperty(PropertyName = "route", Required = Required.Always)>]
@@ -196,7 +196,6 @@ module Service =
             [<JsonProperty(PropertyName = "results", Required = Required.Always)>]
             val mutable Results : IEnumerable<'a>
         end
-
 
     let internal defaultServiceEndpoint = "https://data.smartdublin.ie/cgi-bin/rtpi"
 
