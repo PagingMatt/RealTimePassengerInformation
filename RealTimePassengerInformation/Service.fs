@@ -3,45 +3,61 @@
 open System
 open System.Collections.Generic
 open System.Globalization
+open System.Net.Http
 open System.Runtime.CompilerServices
 open Newtonsoft.Json
 
 module Service =
-    type internal Endpoint =
-        | BusStopInformation
-        | OperatorInformation
-        | RealTimeBusInformation
-        | RouteInformation
-        | RouteListInformation
-        | TimetableInformation
+    module Client =
+        let internal getEndpointContent handler (uri:string) =
+            async {
+                try
+                    use client = new HttpClient(handler, false)
+                    use! response = Async.AwaitTask<HttpResponseMessage>(client.GetAsync(uri))
+                    if response.IsSuccessStatusCode then
+                        let! content = Async.AwaitTask<string>(response.Content.ReadAsStringAsync())
+                        return Ok content
+                    else
+                        return Error (Some response.StatusCode)
+                with _ -> return Error None
+            }
 
-    let internal defaultServiceEndpoint = "https://data.smartdublin.ie/cgi-bin/rtpi"
+    module Endpoints =
+        type internal Endpoint =
+            | BusStopInformation
+            | OperatorInformation
+            | RealTimeBusInformation
+            | RouteInformation
+            | RouteListInformation
+            | TimetableInformation
 
-    let private inv = CultureInfo.InvariantCulture
+        let internal defaultServiceEndpoint = "https://data.smartdublin.ie/cgi-bin/rtpi"
 
-    let rec internal reduceParameters parameters =
-        match parameters with
-        | []                     -> []
-        | (_, None)::ps          -> reduceParameters ps
-        | (name, Some value)::ps -> (name,value)::(reduceParameters ps)
+        let private inv = CultureInfo.InvariantCulture
 
-    let internal buildUri (baseUri:string) apiEndpoint parameters =
-        let keyValueToParameterTerm ((key,value) : string * string) =
-            String.Format(inv, "{0}={1}", key, value)
+        let rec internal reduceParameters parameters =
+            match parameters with
+            | []                     -> []
+            | (_, None)::ps          -> reduceParameters ps
+            | (name, Some value)::ps -> (name,value)::(reduceParameters ps)
 
-        List.map keyValueToParameterTerm parameters
-        |> List.fold
-            (fun acc term ->
-                String.Format(inv, "{0}{1}&", acc, term))
-            String.Empty
-        |> fun parameterString ->
-            String.Format(inv, "{0}{1}",
-                parameterString, keyValueToParameterTerm ("format","json"))
-        |> fun parameterString ->
-            String.Format(inv, "{0}/{1}?{2}",
-                baseUri,
-                apiEndpoint.ToString().ToLowerInvariant(),
-                parameterString)
+        let internal buildUri (baseUri:string) apiEndpoint parameters =
+            let keyValueToParameterTerm ((key,value) : string * string) =
+                String.Format(inv, "{0}={1}", key, value)
+
+            List.map keyValueToParameterTerm parameters
+            |> List.fold
+                (fun acc term ->
+                    String.Format(inv, "{0}{1}&", acc, term))
+                String.Empty
+            |> fun parameterString ->
+                String.Format(inv, "{0}{1}",
+                    parameterString, keyValueToParameterTerm ("format","json"))
+            |> fun parameterString ->
+                String.Format(inv, "{0}/{1}?{2}",
+                    baseUri,
+                    apiEndpoint.ToString().ToLowerInvariant(),
+                    parameterString)
 
     module Models =
         type internal ResponseCode =
