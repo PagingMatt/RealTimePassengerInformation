@@ -54,7 +54,7 @@ module Bus =
             Name = m.OperatorName
             Description = m.OperatorDescription
         }
-   
+
         let public getOperatorInformation () : Async<Result<T, ApiError>> =
             buildUri defaultServiceEndpoint OperatorInformation []
             |> getEndpointContent defaultHandler
