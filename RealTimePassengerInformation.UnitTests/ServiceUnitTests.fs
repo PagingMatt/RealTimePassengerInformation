@@ -1,6 +1,7 @@
 ﻿namespace RealTimePassengerInformation.UnitTests
 
 open Xunit
+open Xunit.Sdk
 
 module Service =
     module Client =
@@ -87,9 +88,21 @@ module Service =
             Assert.Equal(expectedUri, actualUri)
 
     module Models =
+        open System
+        open System.Globalization
         open RealTimePassengerInformation.Service
         open RealTimePassengerInformation.Service.Models
-        open Xunit.Sdk
+
+        [<Fact>]
+        let internal ``serviceDateTimeFormat_ForDateTimeFromService_Parsable`` () =
+            let sampleDateTimeString = "29/09/2018 20:24:35"
+            let expectedDateTime = new DateTime(2018, 9, 29, 20, 24, 35)
+            Assert.Equal(
+                expectedDateTime,
+                DateTime.ParseExact(
+                    sampleDateTimeString,
+                    serviceDateTimeFormat,
+                    CultureInfo.InvariantCulture))
 
         [<Theory>]
         [<InlineData(@"}")>]
