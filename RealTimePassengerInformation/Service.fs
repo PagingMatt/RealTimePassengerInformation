@@ -132,9 +132,9 @@ module Service =
         type internal FullTimetableBusInformationModel =
             struct
                 [<JsonProperty(PropertyName = "startdayofweek", Required = Required.Always)>]
-                val mutable StartDayOfWeek : int
+                val mutable StartDayOfWeek : string
                 [<JsonProperty(PropertyName = "enddayofweek", Required = Required.Always)>]
-                val mutable EndDayOfWeek : int
+                val mutable EndDayOfWeek : string
                 [<JsonProperty(PropertyName = "destination", Required = Required.Always)>]
                 val mutable Destination : string
                 [<JsonProperty(PropertyName = "destinationlocalized", Required = Required.Always)>]
@@ -142,7 +142,7 @@ module Service =
                 [<JsonProperty(PropertyName = "lastupdated", Required = Required.Always)>]
                 val mutable LastUpdated : string
                 [<JsonProperty(PropertyName = "departures", Required = Required.Always)>]
-                val mutable Departures : IEnumerable<string>
+                val mutable Departures : string list
             end
 
         type internal OperatorInformationModel =
