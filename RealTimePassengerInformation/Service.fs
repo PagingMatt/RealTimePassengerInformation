@@ -142,7 +142,7 @@ module Service =
                 [<JsonProperty(PropertyName = "lastupdated", Required = Required.Always)>]
                 val mutable LastUpdated : string
                 [<JsonProperty(PropertyName = "departures", Required = Required.Always)>]
-                val mutable Departures : IEnumerable<string>
+                val mutable Departures : string list
             end
 
         type internal OperatorInformationModel =

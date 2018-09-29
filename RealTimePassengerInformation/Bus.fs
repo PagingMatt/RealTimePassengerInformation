@@ -75,6 +75,62 @@ module Bus =
             >>> validateSingleResult
             >>> make
 
+    module FullTimeTableInformation =
+        open Shared.Formatting
+
+        type public TimeTableEntry = {
+            StartDayOfWeek : Day;
+            EndDayOfWeek   : Day;
+            Destination    : BusStopName;
+            LastUpdated    : DateTime
+            Departures     : TimeSpan list
+        }
+
+        type public T = {
+            StopId           : string;
+            Route            : string;
+            TimeTableEntries : TimeTableEntry list;
+        }
+
+        let internal make mapSucceeding (m:FullTimetableBusInformationModel) =
+            let safeRecord = {
+                    StartDayOfWeek = enum<Day>(m.StartDayOfWeek)
+                    EndDayOfWeek = enum<Day>(m.EndDayOfWeek)
+                    Destination = {
+                        EnglishName = m.Destination
+                        IrishName = m.DestinationLocalized
+                    }
+                    LastUpdated = DateTime.MinValue
+                    Departures = []
+            }
+            if not(mapSucceeding) then (safeRecord,mapSucceeding) else
+            try
+                let parsedLastUpdated =
+                    DateTime.ParseExact(
+                        m.LastUpdated, serviceDateTimeFormat,
+                        inv)
+                let parsedDepartures =
+                    List.map (fun s -> TimeSpan.ParseExact(s, "HH:mm:ss", inv))
+                        m.Departures
+                {safeRecord with LastUpdated=parsedLastUpdated; Departures = parsedDepartures},mapSucceeding
+            with :? FormatException -> (safeRecord,false)
+
+        let public getFullTimetableInformation (stopid:string ) (route:string)
+            : Async<Result<T, ApiError>> =
+                [("type","week");("stopid",stopid);("routeid",route)]
+                |> buildUri defaultServiceEndpoint TimetableInformation
+                |> getEndpointContent defaultHandler
+                >>> deserializeServiceResponseModel<FullTimetableBusInformationModel>
+                >>> validateServiceResponseModel
+                >>< List.mapFold make true
+                >>> fun (rs,mapSucceeded) ->
+                        if mapSucceeded then (Ok {
+                            StopId = stopid
+                            Route = route
+                            TimeTableEntries = rs
+                        })
+                        else Error InternalLibraryError
+
     module OperatorInformation =
         type public Operator = {
             ReferenceCode : string;
@@ -208,20 +264,6 @@ module Bus =
 
         type public T = {
             StopId           : string;
-            TimeTableEntries : TimeTableEntry list;
-        }
-
-    module FullTimeTableInformation =
-        type public TimeTableEntry = {
-            StartDayOfWeek : Day;
-            EndDayOfWeek   : Day;
-            Destination    : BusStopName;
-            Departures     : TimeSpan list
-        }
-
-        type public T = {
-            StopId           : string;
-            Route            : string;
             TimeTableEntries : TimeTableEntry list;
         }
 
