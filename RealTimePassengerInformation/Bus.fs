@@ -121,18 +121,18 @@ module Bus =
                 match deserializeDay m.StartDayOfWeek with
                 | None -> (safeRecord,false)
                 | Some startDay ->
-                    match deserializeDay m.EndDayOfWeek with
-                    | None -> (safeRecord,false)
-                    | Some endDay ->
-                        let parsedLastUpdated = parseDateTimeExn m.LastUpdated
-                        let parsedDepartures = List.map parseTimeSpanExn m.Departures
-                        ({
-                            safeRecord with
-                                StartDayOfWeek = startDay;
-                                EndDayOfWeek   = endDay;
-                                LastUpdated    = parsedLastUpdated;
-                                Departures     = parsedDepartures
-                        }, mapSucceeding)
+                match deserializeDay m.EndDayOfWeek with
+                | None -> (safeRecord,false)
+                | Some endDay ->
+                let parsedLastUpdated = parseDateTimeExn m.LastUpdated
+                let parsedDepartures = List.map parseTimeSpanExn m.Departures
+                ({
+                    safeRecord with
+                        StartDayOfWeek = startDay;
+                        EndDayOfWeek   = endDay;
+                        LastUpdated    = parsedLastUpdated;
+                        Departures     = parsedDepartures
+                }, mapSucceeding)
             with :? FormatException -> (safeRecord,false)
 
         let public getFullTimetableInformation (stopid:int) (route:string)
@@ -249,32 +249,32 @@ module Bus =
                 match deserializeBoardStatus m.DueTime with
                 | None -> (safeRecord,false)
                 | Some arrivalDue ->
-                    match deserializeBoardStatus m.DepartureDueTime with
-                    | None -> (safeRecord,false)
-                    | Some departureDue ->
-                        match deserializeLowFloorStatus m.LowFloorStatus with
-                        | None -> (safeRecord,false)
-                        | Some lowFloorStatus ->
-                            let parsedSourceTimeStamp = parseDateTimeExn m.SourceTimeStamp
-                            let parsedArrivalExpected = parseDateTimeExn m.ArrivalDateTime
-                            let parsedArrivalScheduled = parseDateTimeExn m.ScheduledArrivalDateTime
-                            let parsedDepartureExpected = parseDateTimeExn m.DepartureDateTime
-                            let parsedDepartureScheduled = parseDateTimeExn m.ScheduledDepartureDateTime
-                            ({
-                                safeRecord with
-                                    Arrival =  {
-                                        Expected = parsedArrivalExpected
-                                        Scheduled = parsedArrivalScheduled
-                                        BoardStatus = arrivalDue
-                                    }
-                                    Departure =  {
-                                        Expected = parsedDepartureExpected
-                                        Scheduled = parsedDepartureScheduled
-                                        BoardStatus = departureDue
-                                    }
-                                    HasLowFloor = lowFloorStatus
-                                    SourceTimeStamp = parsedSourceTimeStamp
-                            }, mapSucceeding)
+                match deserializeBoardStatus m.DepartureDueTime with
+                | None -> (safeRecord,false)
+                | Some departureDue ->
+                match deserializeLowFloorStatus m.LowFloorStatus with
+                | None -> (safeRecord,false)
+                | Some lowFloorStatus ->
+                let parsedSourceTimeStamp = parseDateTimeExn m.SourceTimeStamp
+                let parsedArrivalExpected = parseDateTimeExn m.ArrivalDateTime
+                let parsedArrivalScheduled = parseDateTimeExn m.ScheduledArrivalDateTime
+                let parsedDepartureExpected = parseDateTimeExn m.DepartureDateTime
+                let parsedDepartureScheduled = parseDateTimeExn m.ScheduledDepartureDateTime
+                ({
+                    safeRecord with
+                        Arrival =  {
+                            Expected = parsedArrivalExpected
+                            Scheduled = parsedArrivalScheduled
+                            BoardStatus = arrivalDue
+                        }
+                        Departure =  {
+                            Expected = parsedDepartureExpected
+                            Scheduled = parsedDepartureScheduled
+                            BoardStatus = departureDue
+                        }
+                        HasLowFloor = lowFloorStatus
+                        SourceTimeStamp = parsedSourceTimeStamp
+                }, mapSucceeding)
             with :? FormatException -> (safeRecord,false)
 
         let public getRealTimeBusInformation (stopid:int) (route:string)
@@ -327,17 +327,17 @@ module Bus =
 
         let internal make mapSucceeding (m:RouteInformationModel) =
             let safeRecord = {
-                    OperatorName = m.OperatorName
-                    Origin = {
-                        EnglishName = m.Origin
-                        IrishName = m.OriginLocalized
-                    }
-                    Destination = {
-                        EnglishName = m.Destination
-                        IrishName = m.DestinationLocalized
-                    }
-                    LastUpdated = DateTime.MinValue
-                    Stops = List.map makeBusStopInformation m.Stops
+                OperatorName = m.OperatorName
+                Origin = {
+                    EnglishName = m.Origin
+                    IrishName = m.OriginLocalized
+                }
+                Destination = {
+                    EnglishName = m.Destination
+                    IrishName = m.DestinationLocalized
+                }
+                LastUpdated = DateTime.MinValue
+                Stops = List.map makeBusStopInformation m.Stops
             }
             if not(mapSucceeding) then (safeRecord,mapSucceeding) else
             try
