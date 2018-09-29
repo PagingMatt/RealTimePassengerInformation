@@ -8,7 +8,15 @@ open System.Runtime.CompilerServices
 open Newtonsoft.Json
 
 module Service =
+    type public ApiError =
+        | NoResults
+        | ExternalServiceError
+        | InternalLibraryError
+        | NetworkError
+
     module Client =
+        let internal defaultHandler = new HttpClientHandler()
+
         let internal getEndpointContent handler (uri:string) =
             async {
                 try
@@ -18,8 +26,10 @@ module Service =
                         let! content = Async.AwaitTask<string>(response.Content.ReadAsStringAsync())
                         return Ok content
                     else
-                        return Error (Some response.StatusCode)
-                with _ -> return Error None
+                        return Error InternalLibraryError
+                with
+                | :? InvalidOperationException -> return Error InternalLibraryError
+                | :? HttpRequestException      -> return Error NetworkError
             }
 
     module Endpoints =
@@ -239,8 +249,24 @@ module Service =
                 [<JsonProperty(PropertyName = "timestamp", Required = Required.Always)>]
                 val mutable Timestamp : string
                 [<JsonProperty(PropertyName = "results", Required = Required.Always)>]
-                val mutable Results : IEnumerable<'a>
+                val mutable Results : 'a list
             end
+
+        let internal deserializeServiceResponseModel<'a> j
+            : Result<ServiceResponseModel<'a>, ApiError> =
+                try
+                    Ok (JsonConvert.DeserializeObject<ServiceResponseModel<'a>> j)
+                with :? JsonException -> Error ExternalServiceError
+
+        let internal validateServiceResponseModel (m:ServiceResponseModel<'a>) =
+            match m.ErrorCode with
+            | ResponseCode.Success               -> Ok m.Results
+            | ResponseCode.NoResults             -> Error NoResults
+            | ResponseCode.MissingParameter      -> Error InternalLibraryError
+            | ResponseCode.InvalidParameter      -> Error InternalLibraryError
+            | ResponseCode.ScheduledDowntime     -> Error ExternalServiceError
+            | ResponseCode.UnexpectedSystemError -> Error ExternalServiceError
+            | _                                  -> Error InternalLibraryError
 
 [<assembly: InternalsVisibleTo("RealTimePassengerInformation.UnitTests")>]
 do()
