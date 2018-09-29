@@ -2,7 +2,7 @@
 
 open System.Linq
 open Newtonsoft.Json
-open RealTimePassengerInformation.Service
+open RealTimePassengerInformation.Service.Endpoints
 open RealTimePassengerInformation.Service.Models
 open Xunit
 
