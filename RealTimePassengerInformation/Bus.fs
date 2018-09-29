@@ -32,8 +32,8 @@ module Bus =
         }
 
         type public T = {
-            StopId          : string;
-            DisplayedStopId : string;
+            StopId          : int;
+            DisplayedStopId : int;
             ShortName       : BusStopName;
             FullName        : BusStopName;
             Latitude        : float;

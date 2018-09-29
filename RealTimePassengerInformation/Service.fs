@@ -109,9 +109,9 @@ module Service =
         type internal BusStopInformationModel =
             struct
                 [<JsonProperty(PropertyName = "stopid", Required = Required.Always)>]
-                val mutable StopId : string
+                val mutable StopId : int
                 [<JsonProperty(PropertyName = "displaystopid", Required = Required.Always)>]
-                val mutable DisplayStopId : string
+                val mutable DisplayStopId : int
                 [<JsonProperty(PropertyName = "shortname", Required = Required.Always)>]
                 val mutable ShortName : string
                 [<JsonProperty(PropertyName = "shortnamelocalized", Required = Required.Always)>]
