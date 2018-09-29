@@ -277,9 +277,9 @@ module Bus =
                 }, mapSucceeding)
             with :? FormatException -> (safeRecord,false)
 
-        let public getRealTimeBusInformation (stopid:int) (route:string)
+        let public getRealTimeBusInformation (stopid:int)
             : Async<Result<T, ApiError>> =
-                [("stopid",stopid.ToString());("routeid",route)]
+                [("stopid",stopid.ToString())]
                 |> buildUri defaultServiceEndpoint RealTimeBusInformation
                 |> getEndpointContent defaultHandler
                 >>> deserializeServiceResponseModel<RealTimeBusInformationModel>
