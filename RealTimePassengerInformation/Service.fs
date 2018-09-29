@@ -1,7 +1,6 @@
 ﻿namespace RealTimePassengerInformation
 
 open System
-open System.Collections.Generic
 open System.Net.Http
 open System.Runtime.CompilerServices
 open Newtonsoft.Json
@@ -9,9 +8,10 @@ open Newtonsoft.Json
 module Service =
     type public ApiError =
         | NoResults
-        | ExternalServiceError
         | InternalLibraryError
         | NetworkError
+        | ScheduledServiceDowntime
+        | ServiceError
 
     module Client =
         let internal defaultHandler = new HttpClientHandler()
@@ -267,8 +267,8 @@ module Service =
             | ResponseCode.NoResults             -> Error NoResults
             | ResponseCode.MissingParameter      -> Error InternalLibraryError
             | ResponseCode.InvalidParameter      -> Error InternalLibraryError
-            | ResponseCode.ScheduledDowntime     -> Error ExternalServiceError
-            | ResponseCode.UnexpectedSystemError -> Error ExternalServiceError
+            | ResponseCode.ScheduledDowntime     -> Error ScheduledServiceDowntime
+            | ResponseCode.UnexpectedSystemError -> Error ServiceError
             | _                                  -> Error InternalLibraryError
 
         let internal validateSingleResult (results:'a list) =
