@@ -182,7 +182,7 @@ module Bus =
         let public getRouteInformation (route:string) (operatorReference:string)
             : Async<Result<T list, ApiError>> =
                 [("routeid",route);("operator",operatorReference)]
-                |>buildUri defaultServiceEndpoint RouteInformation
+                |> buildUri defaultServiceEndpoint RouteInformation
                 |> getEndpointContent defaultHandler
                 >>> deserializeServiceResponseModel<RouteInformationModel>
                 >>> validateServiceResponseModel
