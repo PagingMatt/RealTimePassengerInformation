@@ -78,7 +78,7 @@ module Service =
             | ScheduledDowntime = 4
             | UnexpectedSystemError = 5
 
-        type internal RouteStops =
+        type internal RouteStop =
             struct
                 [<JsonProperty(PropertyName = "stopid", Required = Required.Always)>]
                 val mutable StopId : string
@@ -207,7 +207,7 @@ module Service =
                 [<JsonProperty(PropertyName = "lastupdated", Required = Required.Always)>]
                 val mutable LastUpdated : string
                 [<JsonProperty(PropertyName = "stops", Required = Required.Always)>]
-                val mutable Stops : IEnumerable<RouteStops>
+                val mutable Stops : RouteStop list
             end
 
         type internal RouteListInformationModel =

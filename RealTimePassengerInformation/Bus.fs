@@ -42,30 +42,38 @@ module Bus =
             Operators       : BusStopOperator list;
         }
 
-        let internal make (m:BusStopInformationModel) = {
-            StopId = m.StopId
-            DisplayedStopId = m.DisplayStopId
-            ShortName = {
-                EnglishName = m.ShortName
-                IrishName = m.ShortNameLocalized
-            }
-            FullName = {
-                EnglishName = m.FullName
-                IrishName = m.FullNameLocalized
-            }
-            Latitude = m.Latitude
-            Longitude = m.Longitude
-            LastUpdated = DateTime.ParseExact(m.LastUpdated, serviceDateTimeFormat, inv)
-            Operators = List.map (fun (o:StopOperator) -> {Name = o.OperatorName; Routes = o.Routes}) m.Operators
-        }
+        let internal make (m:BusStopInformationModel) =
+            try
+                let parsedLastUpdated =
+                    DateTime.ParseExact(
+                        m.LastUpdated, serviceDateTimeFormat,
+                        inv)
+                Ok {
+                    StopId = m.StopId
+                    DisplayedStopId = m.DisplayStopId
+                    ShortName = {
+                        EnglishName = m.ShortName
+                        IrishName = m.ShortNameLocalized
+                    }
+                    FullName = {
+                        EnglishName = m.FullName
+                        IrishName = m.FullNameLocalized
+                    }
+                    Latitude = m.Latitude
+                    Longitude = m.Longitude
+                    LastUpdated = parsedLastUpdated
+                    Operators = List.map (fun (o:StopOperator) -> {Name = o.OperatorName; Routes = o.Routes}) m.Operators
+                }
+            with :? FormatException -> Error ExternalServiceError
 
         let getBusStopInformation (stopId:int) : Async<Result<T, ApiError>> =
-            buildUri defaultServiceEndpoint BusStopInformation [("stopid",stopId.ToString())]
+            [("stopid",stopId.ToString())]
+            |> buildUri defaultServiceEndpoint BusStopInformation
             |> getEndpointContent defaultHandler
             >>> deserializeServiceResponseModel<BusStopInformationModel>
             >>> validateServiceResponseModel
             >>> validateSingleResult
-            >>< make
+            >>> make
 
     module OperatorInformation =
         type public Operator = {
@@ -114,6 +122,8 @@ module Bus =
         }
 
     module RouteInformation =
+        open Shared.Formatting
+
         type public BusStopInformation = {
             StopId          : string;
             DisplayedStopId : string;
@@ -127,8 +137,55 @@ module Bus =
             OperatorName : string;
             Origin       : BusStopName;
             Destination  : BusStopName;
+            LastUpdated  : DateTime;
             Stops        : BusStopInformation list;
         }
+
+        let internal makeBusStopInformation (m:RouteStop) = {
+            StopId = m.StopId
+            DisplayedStopId = m.DisplayStopId
+            ShortName = {
+                EnglishName = m.ShortName
+                IrishName = m.ShortNameLocalized
+            }
+            FullName = {
+                EnglishName = m.FullName
+                IrishName = m.FullNameLocalized
+            }
+            Latitude = m.Latitude
+            Longitude = m.Longitude
+        }
+
+        let internal make (m:RouteInformationModel) =
+            try
+                let parsedLastUpdated =
+                    DateTime.ParseExact(
+                        m.LastUpdated, serviceDateTimeFormat,
+                        inv)
+                Ok {
+                    OperatorName = m.OperatorName
+                    Origin = {
+                        EnglishName = m.Origin
+                        IrishName = m.OriginTranslated
+                    }
+                    Destination = {
+                        EnglishName = m.Destination
+                        IrishName = m.DestinationTranslated
+                    }
+                    LastUpdated = parsedLastUpdated
+                    Stops = List.map makeBusStopInformation m.Stops
+                }
+            with :? FormatException -> Error ExternalServiceError
+
+        let public getRouteInformation (route:string) (operatorReferenceCode:string)
+            : Async<Result<T, ApiError>> =
+                [("route",route);("operator",operatorReferenceCode)]
+                |>buildUri defaultServiceEndpoint RouteInformation
+                |> getEndpointContent defaultHandler
+                >>> deserializeServiceResponseModel<RouteInformationModel>
+                >>> validateServiceResponseModel
+                >>> validateSingleResult
+                >>> make
 
     module RouteListInformation =
         type public T = {
