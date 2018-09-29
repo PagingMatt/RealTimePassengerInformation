@@ -253,6 +253,8 @@ module Service =
 
         let internal serviceDateTimeFormat = "dd/MM/yyyy HH:mm:ss"
 
+        let internal serviceTimeSpanFormat = "hh\\:mm\\:ss"
+
         let internal deserializeServiceResponseModel<'a> j
             : Result<ServiceResponseModel<'a>, ApiError> =
                 try
