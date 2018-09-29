@@ -15,13 +15,24 @@ module Bus =
     }
 
     type public Day =
-        | Sunday    = 0
-        | Monday    = 1
-        | Tuesday   = 2
-        | Wednesday = 3
-        | Thursday  = 4
-        | Friday    = 5
-        | Saturday  = 6
+        | Sunday
+        | Monday
+        | Tuesday
+        | Wednesday
+        | Thursday
+        | Friday
+        | Saturday
+
+    let deserializeDay day =
+        match day with
+        | "Sunday"    -> Some Sunday
+        | "Monday"    -> Some Monday
+        | "Tuesday"   -> Some Tuesday
+        | "Wednesday" -> Some Wednesday
+        | "Thursday"  -> Some Thursday
+        | "Friday"    -> Some Friday
+        | "Saturday"  -> Some Saturday
+        | _           -> None
 
     module BusStopInformation =
         open Shared.Formatting
@@ -87,37 +98,50 @@ module Bus =
         }
 
         type public T = {
-            StopId           : string;
+            StopId           : int;
             Route            : string;
             TimeTableEntries : TimeTableEntry list;
         }
 
-        let internal make mapSucceeding (m:FullTimetableBusInformationModel) =
-            let safeRecord = {
-                    StartDayOfWeek = enum<Day>(m.StartDayOfWeek)
-                    EndDayOfWeek = enum<Day>(m.EndDayOfWeek)
-                    Destination = {
-                        EnglishName = m.Destination
-                        IrishName = m.DestinationLocalized
-                    }
-                    LastUpdated = DateTime.MinValue
-                    Departures = []
+        let internal makeSafe (m:FullTimetableBusInformationModel) = {
+            StartDayOfWeek = Sunday
+            EndDayOfWeek = Sunday
+            Destination = {
+                EnglishName = m.Destination
+                IrishName = m.DestinationLocalized
             }
+            LastUpdated = DateTime.MinValue
+            Departures = []
+        }
+
+        let internal make mapSucceeding (m:FullTimetableBusInformationModel) =
+            let safeRecord =  makeSafe m
             if not(mapSucceeding) then (safeRecord,mapSucceeding) else
             try
-                let parsedLastUpdated =
-                    DateTime.ParseExact(
-                        m.LastUpdated, serviceDateTimeFormat,
-                        inv)
-                let parsedDepartures =
-                    List.map (fun s -> TimeSpan.ParseExact(s, "HH:mm:ss", inv))
-                        m.Departures
-                {safeRecord with LastUpdated=parsedLastUpdated; Departures = parsedDepartures},mapSucceeding
+                match deserializeDay m.StartDayOfWeek with
+                | None -> (safeRecord,false)
+                | Some startDay ->
+                    match deserializeDay m.EndDayOfWeek with
+                    | None -> (safeRecord,false)
+                    | Some endDay ->
+                        let parsedLastUpdated =
+                            DateTime.ParseExact(
+                                m.LastUpdated, serviceDateTimeFormat, inv)
+                        let parsedDepartures =
+                            List.map (fun s -> TimeSpan.ParseExact(s, "hh\\:mm\\:ss", inv))
+                                m.Departures
+                        ({
+                            safeRecord with
+                                StartDayOfWeek = startDay;
+                                EndDayOfWeek   = endDay;
+                                LastUpdated    = parsedLastUpdated;
+                                Departures     = parsedDepartures
+                        }, mapSucceeding)
             with :? FormatException -> (safeRecord,false)
 
-        let public getFullTimetableInformation (stopid:string ) (route:string)
+        let public getFullTimetableInformation (stopid:int) (route:string)
             : Async<Result<T, ApiError>> =
-                [("type","week");("stopid",stopid);("routeid",route)]
+                [("type","week");("stopid",stopid.ToString());("routeid",route)]
                 |> buildUri defaultServiceEndpoint TimetableInformation
                 |> getEndpointContent defaultHandler
                 >>> deserializeServiceResponseModel<FullTimetableBusInformationModel>
