@@ -2,6 +2,11 @@ namespace RealTimePassengerInformation
 
 open System
 open System.Runtime.CompilerServices
+open Service
+open Service.Client
+open Service.Endpoints
+open Service.Models
+open Shared.Operators
 
 module Bus =
     type public BusStopName = {
@@ -36,11 +41,26 @@ module Bus =
         }
 
     module OperatorInformation =
-        type public T = {
+        type public Operator = {
             ReferenceCode : string;
             Name          : string;
             Description   : string;
         }
+
+        type public T = Operator list
+
+        let internal make (m:OperatorInformationModel) = {
+            ReferenceCode = m.OperatorReference
+            Name = m.OperatorName
+            Description = m.OperatorDescription
+        }
+   
+        let public getOperatorInformation () : Async<Result<T, ApiError>> =
+            buildUri defaultServiceEndpoint OperatorInformation []
+            |> getEndpointContent defaultHandler
+            >>> deserializeServiceResponseModel<OperatorInformationModel>
+            >>> validateServiceResponseModel
+            >>< List.map make
 
     module RealTimeBusInformation =
         type public RealTimeSlot = {
