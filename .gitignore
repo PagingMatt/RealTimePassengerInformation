@@ -7,7 +7,8 @@ lib/release
 Debug
 *.suo
 *.user
-obj
+*/obj/**/*.*
+!*/obj/project.assets.json
 bin
 /build/
 *.exe
