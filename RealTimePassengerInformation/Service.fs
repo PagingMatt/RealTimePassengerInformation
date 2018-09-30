@@ -180,7 +180,7 @@ module Service =
                 [<JsonProperty(PropertyName = "direction", Required = Required.Always)>]
                 val mutable Direction : string
                 [<JsonProperty(PropertyName = "operator", Required = Required.Always)>]
-                val mutable OperatorName : string
+                val mutable OperatorReferenceCode : string
                 [<JsonProperty(PropertyName = "additionalinformation", Required = Required.Always)>]
                 val mutable AdditionalInformation : string
                 [<JsonProperty(PropertyName = "lowfloorstatus", Required = Required.Always)>]

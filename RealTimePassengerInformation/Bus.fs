@@ -190,7 +190,7 @@ module Bus =
             Origin                : BusStopName;
             Destination           : BusStopName;
             Direction             : string;
-            OperatorName          : string;
+            OperatorReferenceCode : string;
             AdditionalInformation : string;
             HasLowFloor           : bool;
             Route                 : string;
@@ -222,7 +222,7 @@ module Bus =
                 IrishName = m.DestinationLocalized
             }
             Direction = m.Direction
-            OperatorName = m.OperatorName
+            OperatorReferenceCode = m.OperatorReferenceCode
             AdditionalInformation = m.AdditionalInformation
             HasLowFloor = false
             Route = m.Route
