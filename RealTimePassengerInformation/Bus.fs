@@ -363,6 +363,23 @@ module Bus =
             Routes                : string list;
         }
 
+        let internal foldOrderedOperatorRouteList acc (m:RouteListInformationModel) =
+            match acc with
+            | []         -> (m.OperatorReference, m.Route::[])::[]
+            | (o,rs)::os ->
+                if o = m.OperatorReference then (o,m.Route::rs)::os
+                else (m.OperatorReference, m.Route::[])::acc
+
+        let public getRouteListInformation ()
+            : Async<Result<T list, ApiError>>=
+                buildUri defaultServiceEndpoint RouteListInformation []
+                |> getEndpointContent defaultHandler
+                >>> deserializeServiceResponseModel<RouteListInformationModel>
+                >>> validateServiceResponseModel
+                >>< List.sortBy (fun m -> m.OperatorReference)
+                >>< List.fold foldOrderedOperatorRouteList []
+                >>< List.map (fun (o,rs) -> {OperatorReferenceCode = o; Routes = rs})
+
     module DailyTimeTableInformation =
         type public TimeTableEntry = {
             Arrival      : DateTime;
