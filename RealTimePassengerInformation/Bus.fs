@@ -352,7 +352,7 @@ module Bus =
                 |> getEndpointContent defaultHandler
                 >>> deserializeServiceResponseModel<RouteInformationModel>
                 >>> validateServiceResponseModel
-                >>< List.mapFold make true 
+                >>< List.mapFold make true
                 >>> fun (rs,mapSucceeded) ->
                         if mapSucceeded then Ok rs
                         else Error InternalLibraryError
@@ -376,24 +376,21 @@ module Bus =
             >>> deserializeServiceResponseModel<RouteListInformationModel>
             >>> validateServiceResponseModel
 
-        let internal groupByOperator models
-            : Result<(string * string list) list, ApiError> =
-                List.sortBy (fun (m:RouteListInformationModel) -> m.OperatorReference) models
-                |> fun sortedModels -> Ok (List.fold foldOrderedOperatorRouteList [] sortedModels)
+        let internal groupByOperator models =
+            List.sortBy (fun (m:RouteListInformationModel) -> m.OperatorReference) models
+            |> List.fold foldOrderedOperatorRouteList []
 
-        let public getRouteListInformation ()
-            : Async<Result<T list, ApiError>>=
+        let public getRouteListInformation () : Async<Result<T list, ApiError>> =
                 getRouteListModel []
-                >>> groupByOperator
+                >>< groupByOperator
                 >>< List.map (fun (o,rs) -> {OperatorReferenceCode = o; Routes = rs})
 
-        let public getRouteListInformationForOperator operator
-            : Async<Result<T, ApiError>> =
+        let public getRouteListInformationForOperator operator : Async<Result<T, ApiError>> =
                 getRouteListModel [("operator",operator)]
-                >>> groupByOperator
+                >>< groupByOperator
                 >>> fun os ->
                         match os with
-                        | (o,rs)::[] -> Ok {OperatorReferenceCode = o; Routes = rs}
+                        | (o,rs)::[] -> Ok {OperatorReferenceCode=o; Routes=rs;}
                         | _          -> Error InternalLibraryError
 
     module DailyTimeTableInformation =
