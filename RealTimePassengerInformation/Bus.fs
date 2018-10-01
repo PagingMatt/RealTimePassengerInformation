@@ -352,7 +352,7 @@ module Bus =
                 |> getEndpointContent defaultHandler
                 >>> deserializeServiceResponseModel<RouteInformationModel>
                 >>> validateServiceResponseModel
-                >>< List.mapFold make true 
+                >>< List.mapFold make true
                 >>> fun (rs,mapSucceeded) ->
                         if mapSucceeded then Ok rs
                         else Error InternalLibraryError
@@ -370,15 +370,28 @@ module Bus =
                 if o = m.OperatorReference then (o,m.Route::rs)::os
                 else (m.OperatorReference, m.Route::[])::acc
 
-        let public getRouteListInformation ()
-            : Async<Result<T list, ApiError>>=
-                buildUri defaultServiceEndpoint RouteListInformation []
-                |> getEndpointContent defaultHandler
-                >>> deserializeServiceResponseModel<RouteListInformationModel>
-                >>> validateServiceResponseModel
-                >>< List.sortBy (fun m -> m.OperatorReference)
-                >>< List.fold foldOrderedOperatorRouteList []
+        let internal getRouteListModel args =
+            buildUri defaultServiceEndpoint RouteListInformation args
+            |> getEndpointContent defaultHandler
+            >>> deserializeServiceResponseModel<RouteListInformationModel>
+            >>> validateServiceResponseModel
+
+        let internal groupByOperator models =
+            List.sortBy (fun (m:RouteListInformationModel) -> m.OperatorReference) models
+            |> List.fold foldOrderedOperatorRouteList []
+
+        let public getRouteListInformation () : Async<Result<T list, ApiError>> =
+                getRouteListModel []
+                >>< groupByOperator
                 >>< List.map (fun (o,rs) -> {OperatorReferenceCode = o; Routes = rs})
+
+        let public getRouteListInformationForOperator operator : Async<Result<T, ApiError>> =
+                getRouteListModel [("operator",operator)]
+                >>< groupByOperator
+                >>> fun os ->
+                        match os with
+                        | (o,rs)::[] -> Ok {OperatorReferenceCode=o; Routes=rs;}
+                        | _          -> Error InternalLibraryError
 
     module DailyTimeTableInformation =
         type public TimeTableEntry = {
