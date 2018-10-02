@@ -26,7 +26,7 @@ before_test:
   - cmd: nuget install opencover -Version 4.6.519 -OutputDirectory tools
 test_script:
   - cmd: dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj /p:Configuration=Release
-  - cmd: .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -register:user -target:dotnet.exe -targetargs:"RealTimePassengerInformation.UnitTests\bin\Release\netcoreapp2.1\RealTimePassengerInformation.UnitTests.dll -noshadow" -output:".\coverage.xml" -filter:"+[RealTimePassengerInformation]* -[RealTimePassengerInformation.UnitTests]*"
+  - cmd: .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -register:user -target:dotnet.exe "-targetargs:"".\tools\xunit.runner.console.2.4.0\tools\netcoreapp2.0\xunit.console.dll"" ""RealTimePassengerInformation.UnitTests\bin\Release\netcoreapp2.1\RealTimePassengerInformation.UnitTests.dll"" -noshadow -appveyor" -oldStyle -output:".\coverage.xml" -filter:"+[RealTimePassengerInformation]*"
 after_test:
   - ps: |
       $env:PATH='C:\msys64\usr\bin;'+$env:PATH
