@@ -22,9 +22,22 @@ build_script:
 after_build:
 before_test:
   - cmd: dotnet restore RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj
+  - cmd: nuget install opencover -Version 4.6.519 -OutputDirectory tools
 test_script:
   - cmd: dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj /p:Configuration=Release
+  - cmd: |
+      .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe
+        -register:user
+        -target:"%xunit20%\xunit.console.x86.exe"
+        -targetargs:"RealTimePassengerInformation.UnitTests\bin\Release\netcoreapp2.1\RealTimePassengerInformation.UnitTests.dll
+        -noshadow"
+        -output:".\coverage.xml"
+        -filter:"+[RealTimePassengerInformation]* -[RealTimePassengerInformation.UnitTests]*"
 after_test:
+  - ps: |
+      $env:PATH='C:\msys64\usr\bin;'+$env:PATH
+      Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
+      bash codecov.sh -f "coverage.xml"
 artifacts:
 before_deploy:
 after_deploy:
