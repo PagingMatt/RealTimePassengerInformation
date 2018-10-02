@@ -26,6 +26,7 @@ test_script:
   - cmd: dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj /p:Configuration=Release
 after_test:
 artifacts:
+  - path: 'RealTimePassengerInformation/bin/Release/netcoreapp2.1/*.*'
 before_deploy:
 after_deploy:
 on_success:
