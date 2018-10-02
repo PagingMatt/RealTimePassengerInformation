@@ -2,14 +2,12 @@
 
 An F# implementation of an unofficial client library for the RTPI service provided for Dublin public transport by the National Transport Authority.
 
-[![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/m-harrison/RealTimePassengerInformation/blob/master/LICENSE.md)
-
 ## Build status on master
 
-| Platform            | Service       | Status  |
-| :-----------------: |:-------------:| :-----: |
-| Windows Server 2016 | AppVeyor      | [![Build status](https://ci.appveyor.com/api/projects/status/6oqf0manxpf59h01/branch/master?svg=true)](https://ci.appveyor.com/project/m-harrison/realtimepassengerinformation/branch/master) |
-| OSX & Ubuntu 14.04  | Travis        | [![Build Status](https://travis-ci.org/m-harrison/RealTimePassengerInformation.svg?branch=master)](https://travis-ci.org/m-harrison/RealTimePassengerInformation)  |
+| OS                  | Continuous Integration Service        | Build Status  |
+| :-----------------: |:-------------------------------------:| :-----------: |
+| Windows Server 2016 | [AppVeyor](https://www.appveyor.com/) | [![Build status](https://ci.appveyor.com/api/projects/status/6oqf0manxpf59h01/branch/master?svg=true)](https://ci.appveyor.com/project/m-harrison/realtimepassengerinformation/branch/master) |
+| OS X + Ubuntu 14.04  | [Travis](https://travis-ci.org/)     | [![Build Status](https://travis-ci.org/m-harrison/RealTimePassengerInformation.svg?branch=master)](https://travis-ci.org/m-harrison/RealTimePassengerInformation)  |
 
 ## Acknowledgements
 
