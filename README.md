@@ -2,6 +2,8 @@
 
 An F# implementation of an unofficial client library for the RTPI service provided for Dublin public transport by the National Transport Authority.
 
+[![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/m-harrison/RealTimePassengerInformation/blob/master/LICENSE.md)
+
 ## Build status on master
 
 | Platform            | Service       | Status  |
