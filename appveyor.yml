@@ -1,0 +1,33 @@
+version: '0.0.{build}'
+image:
+  - Visual Studio 2017
+branches:
+  only:
+  - master
+deploy: off
+init:
+install:
+dotnet_csproj:
+  patch: true
+  file: '**\*.fsproj'
+  version: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}'
+  informational_version: '{version}'
+before_build:
+  - cmd: dotnet restore RealTimePassengerInformation/RealTimePassengerInformation.fsproj
+build_script:
+  - cmd: dotnet build RealTimePassengerInformation/RealTimePassengerInformation.fsproj /p:Configuration=Release
+after_build:
+before_test:
+  - cmd: dotnet restore RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj
+test_script:
+  - cmd: dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj /p:Configuration=Release
+after_test:
+artifacts:
+before_deploy:
+after_deploy:
+on_success:
+on_failure:
+on_finish:
