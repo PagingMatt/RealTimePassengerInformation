@@ -27,6 +27,10 @@ before_test:
 test_script:
   - cmd: dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj --no-restore --no-build /p:Configuration=Debug /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput='./RealTimePassengerInformation.UnitTests.coverage.opencover.xml'
 after_test:
+  - ps: |
+      $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
+      Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
+      bash codecov.sh -f "RealTimePassengerInformation.UnitTests.coverage.opencover.xml"
 artifacts:
 before_deploy:
 after_deploy:
