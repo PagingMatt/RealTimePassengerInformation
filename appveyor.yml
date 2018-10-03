@@ -23,10 +23,10 @@ build_script:
 after_build:
 before_test:
   - cmd: dotnet restore RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj
-  - cmd: nuget install opencover -Version 4.6.519 -OutputDirectory tools
+  - cmd: choco install opencover.portable
 test_script:
   - cmd: dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj /p:Configuration=Debug
-  - cmd: .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -register:user -target:dotnet.exe "-targetargs:""RealTimePassengerInformation.UnitTests\bin\Debug\netcoreapp2.1\RealTimePassengerInformation.UnitTests.dll"" -noshadow -appveyor" -oldStyle -output:".\coverage.xml" -filter:"+[RealTimePassengerInformation]*"
+  - cmd: OpenCover.Console.exe -register:user -target:"dotnet.exe" -targetargs:".\RealTimePassengerInformation.UnitTests\bin\Debug\netcoreapp2.1\RealTimePassengerInformation.UnitTests.dll -noshadow" -oldStyle -output:".\coverage.xml" -filter:"+[RealTimePassengerInformation*]* -[RealTimePassengerInformation.UnitTests*]*"
 after_test:
   - ps: |
       $env:PATH='C:\msys64\usr\bin;'+$env:PATH
