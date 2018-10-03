@@ -23,9 +23,8 @@ build_script:
 after_build:
 before_test:
   - cmd: dotnet restore RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj
-  - cmd: choco install opencover.portable
 test_script:
-  - cmd: OpenCover.Console.exe -register:user -target:"dotnet.exe" -targetargs:"test .\RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj /p:Configuration=Debug" -oldStyle -output:".\coverage.xml" -filter:"+[RealTimePassengerInformation*]* -[RealTimePassengerInformation.UnitTests*]*"
+  - cmd: dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj /p:Configuration=Debug /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=coverage.xml
 after_test:
   - ps: |
       $env:PATH='C:\msys64\usr\bin;'+$env:PATH
