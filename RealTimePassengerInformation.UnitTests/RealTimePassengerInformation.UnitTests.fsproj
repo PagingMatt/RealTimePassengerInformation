@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-
+    <DebugType>full</DebugType>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -20,6 +20,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="OpenCover" Version="4.6.519" />
   </ItemGroup>
 
   <ItemGroup>
