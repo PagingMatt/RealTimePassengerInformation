@@ -18,12 +18,14 @@ dotnet_csproj:
 before_build:
   - cmd: dotnet restore RealTimePassengerInformation/RealTimePassengerInformation.fsproj
 build_script:
-  - cmd: dotnet build RealTimePassengerInformation/RealTimePassengerInformation.fsproj /p:Configuration=Release
+  - cmd: dotnet build RealTimePassengerInformation/RealTimePassengerInformation.fsproj --no-restore /p:Configuration=Release
+  - cmd: dotnet build RealTimePassengerInformation/RealTimePassengerInformation.fsproj --no-restore /p:Configuration=Debug
 after_build:
 before_test:
   - cmd: dotnet restore RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj
+  - cmd: dotnet build RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj --no-restore /p:Configuration=Debug
 test_script:
-  - cmd: dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj /p:Configuration=Release
+  - cmd: dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj --no-restore --no-build /p:Configuration=Debug /p:CollectCoverage=true
 after_test:
 artifacts:
 before_deploy:
