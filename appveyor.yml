@@ -18,13 +18,18 @@ dotnet_csproj:
 before_build:
   - cmd: dotnet restore RealTimePassengerInformation/RealTimePassengerInformation.fsproj
 build_script:
+  - cmd: dotnet build RealTimePassengerInformation/RealTimePassengerInformation.fsproj /p:Configuration=Debug
   - cmd: dotnet build RealTimePassengerInformation/RealTimePassengerInformation.fsproj /p:Configuration=Release
 after_build:
 before_test:
   - cmd: dotnet restore RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj
 test_script:
-  - cmd: dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj /p:Configuration=Release
+  - cmd: dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj /p:Configuration=Debug /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=coverage.xml
 after_test:
+  - ps: |
+      $env:PATH='C:\msys64\usr\bin;'+$env:PATH
+      Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
+      bash codecov.sh -f "coverage.xml"
 artifacts:
 before_deploy:
 after_deploy:
