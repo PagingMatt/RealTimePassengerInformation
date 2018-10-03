@@ -8,10 +8,15 @@ matrix:
       dist: trusty
       sudo: required
     - os: osx
+      osx_image: xcode9.4
+    - os: osx
       osx_image: xcode10
 
 install:
-  - dotnet restore
+  - dotnet restore RealTimePassengerInformation/RealTimePassengerInformation.fsproj
+  - dotnet restore RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj
 script:
-  - dotnet build RealTimePassengerInformation/RealTimePassengerInformation.fsproj /p:Configuration=Release
-  - dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj /p:Configuration=Release
+  - dotnet build RealTimePassengerInformation/RealTimePassengerInformation.fsproj --no-restore /p:Configuration=Debug
+  - dotnet build RealTimePassengerInformation/RealTimePassengerInformation.fsproj --no-restore /p:Configuration=Release
+  - dotnet build RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj --no-restore /p:Configuration=Debug
+  - dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj --no-restore --no-build /p:Configuration=Debug
