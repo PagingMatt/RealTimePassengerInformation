@@ -25,7 +25,7 @@ before_test:
   - cmd: dotnet restore RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj
   - cmd: dotnet build RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj --no-restore /p:Configuration=Debug
 test_script:
-  - cmd: dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj --no-restore --no-build /p:Configuration=Debug /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+  - cmd: dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj --no-restore --no-build /p:Configuration=Debug /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput='./RealTimePassengerInformation.UnitTests.coverage.opencover.xml'
 after_test:
 artifacts:
 before_deploy:
