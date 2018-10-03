@@ -18,20 +18,32 @@ dotnet_csproj:
 before_build:
   - cmd: dotnet restore RealTimePassengerInformation/RealTimePassengerInformation.fsproj
 build_script:
-  - cmd: dotnet build RealTimePassengerInformation/RealTimePassengerInformation.fsproj --no-restore /p:Configuration=Release
   - cmd: dotnet build RealTimePassengerInformation/RealTimePassengerInformation.fsproj --no-restore /p:Configuration=Debug
+  - cmd: dotnet build RealTimePassengerInformation/RealTimePassengerInformation.fsproj --no-restore /p:Configuration=Release
 after_build:
+  - cmd: 7z a RealTimePassengerInformation_bin_Debug.zip RealTimePassengerInformation/bin/Debug/*
+  - cmd: 7z a RealTimePassengerInformation_bin_Release.zip RealTimePassengerInformation/bin/Release/*
 before_test:
   - cmd: dotnet restore RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj
   - cmd: dotnet build RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj --no-restore /p:Configuration=Debug
 test_script:
   - cmd: dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj --no-restore --no-build /p:Configuration=Debug /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./RealTimePassengerInformation.UnitTests.coverage.opencover.xml
 after_test:
+  - cmd: 7z a RealTimePassengerInformation_UnitTests_Debug.zip RealTimePassengerInformation.UnitTests/bin/Debug/* RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.coverage.opencover.xml
   - ps: |
       $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
       Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
       bash codecov.sh -f "RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.coverage.opencover.xml"
 artifacts:
+  - path: RealTimePassengerInformation_bin_Debug.zip
+    name: RealTimePassengerInformation (Debug)
+    type: zip
+  - path: RealTimePassengerInformation_bin_Release.zip
+    name: RealTimePassengerInformation (Release)
+    type: zip
+  - path: RealTimePassengerInformation_UnitTests_Debug.zip
+    name: RealTimePassengerInformation (Unit Tests)
+    type: zip
 before_deploy:
 after_deploy:
 on_success:
