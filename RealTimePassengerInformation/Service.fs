@@ -95,6 +95,18 @@ module Service =
                 val mutable Latitude : float
                 [<JsonProperty(PropertyName = "longitude", Required = Required.Always)>]
                 val mutable Longitude : float
+
+                new (stopId, displayStopId, shortName, shortNameLocalized, fullName, fullNameLocalized, latitude, longitude) =
+                    {
+                        StopId = stopId;
+                        DisplayStopId = displayStopId;
+                        ShortName = shortName;
+                        ShortNameLocalized = shortNameLocalized;
+                        FullName = fullName;
+                        FullNameLocalized = fullNameLocalized;
+                        Latitude = latitude;
+                        Longitude = longitude
+                    }
             end
 
         type internal StopOperator =
@@ -103,6 +115,12 @@ module Service =
                 val mutable OperatorName : string
                 [<JsonProperty(PropertyName = "routes", Required = Required.Always)>]
                 val mutable Routes : string list
+
+                new (operatorName, routes) =
+                    {
+                        OperatorName = operatorName;
+                        Routes = routes
+                    }
             end
 
         type internal BusStopInformationModel =
@@ -127,6 +145,20 @@ module Service =
                 val mutable LastUpdated : string
                 [<JsonProperty(PropertyName = "operators", Required = Required.Always)>]
                 val mutable Operators : StopOperator list
+
+                new (stopId, displayStopId, shortName, shortNameLocalized, fullName, fullNameLocalized, latitude, longitude, lastUpdated, operators) =
+                    {
+                        StopId = stopId;
+                        DisplayStopId = displayStopId;
+                        ShortName = shortName;
+                        ShortNameLocalized = shortNameLocalized;
+                        FullName = fullName;
+                        FullNameLocalized = fullNameLocalized;
+                        Latitude = latitude;
+                        Longitude = longitude;
+                        LastUpdated = lastUpdated;
+                        Operators = operators;
+                    }
             end
 
         type internal FullTimetableBusInformationModel =
@@ -143,6 +175,16 @@ module Service =
                 val mutable LastUpdated : string
                 [<JsonProperty(PropertyName = "departures", Required = Required.Always)>]
                 val mutable Departures : string list
+
+                new (startDayOfWeek, endDayOfWeek, destination, destinationLocalized, lastUpdated, departures) =
+                    {
+                        StartDayOfWeek = startDayOfWeek;
+                        EndDayOfWeek = endDayOfWeek;
+                        Destination = destination;
+                        DestinationLocalized = destinationLocalized;
+                        LastUpdated = lastUpdated;
+                        Departures = departures;
+                    }
             end
 
         type internal OperatorInformationModel =
@@ -153,6 +195,13 @@ module Service =
                 val mutable OperatorName : string
                 [<JsonProperty(PropertyName = "operatordescription", Required = Required.Always)>]
                 val mutable OperatorDescription : string
+
+                new (operatorReference, operatorName, operatorDescription) =
+                    {
+                        OperatorReference = operatorReference;
+                        OperatorName = operatorName;
+                        OperatorDescription = operatorDescription;
+                    }
             end
 
         type internal RealTimeBusInformationModel =
@@ -189,6 +238,26 @@ module Service =
                 val mutable Route : string
                 [<JsonProperty(PropertyName = "sourcetimestamp", Required = Required.Always)>]
                 val mutable SourceTimeStamp : string
+
+                new (arrivalDateTime, dueTime, departureDateTime, departureDueTime, scheduledArrivalDateTime, scheduledDepartureDateTime, destination, destinationLocalized, origin, originLocalized, direction, operatorReferenceCode, additionalInformation, lowFloorStatus, route, sourceTimeStamp) =
+                    {
+                        ArrivalDateTime = arrivalDateTime;
+                        DueTime = dueTime;
+                        DepartureDateTime = departureDateTime;
+                        DepartureDueTime = departureDueTime;
+                        ScheduledArrivalDateTime = scheduledArrivalDateTime;
+                        ScheduledDepartureDateTime = scheduledDepartureDateTime;
+                        Destination = destination;
+                        DestinationLocalized = destinationLocalized;
+                        Origin = origin;
+                        OriginLocalized = originLocalized;
+                        Direction = direction;
+                        OperatorReferenceCode = operatorReferenceCode;
+                        AdditionalInformation = additionalInformation;
+                        LowFloorStatus = lowFloorStatus;
+                        Route = route;
+                        SourceTimeStamp = sourceTimeStamp;
+                    }
             end
 
         type internal RouteInformationModel =
@@ -207,6 +276,17 @@ module Service =
                 val mutable LastUpdated : string
                 [<JsonProperty(PropertyName = "stops", Required = Required.Always)>]
                 val mutable Stops : RouteStop list
+
+                new (operatorName, origin, originLocalized, destination, destinationLocalized, lastUpdated, stops) =
+                    {
+                        OperatorName = operatorName;
+                        Origin = origin;
+                        OriginLocalized = originLocalized;
+                        Destination = destination;
+                        DestinationLocalized = destinationLocalized;
+                        LastUpdated = lastUpdated;
+                        Stops = stops;
+                    }
             end
 
         type internal RouteListInformationModel =
@@ -215,6 +295,12 @@ module Service =
                 val mutable OperatorReference : string
                 [<JsonProperty(PropertyName = "route", Required = Required.Always)>]
                 val mutable Route : string
+
+                new (operatorReference, route) =
+                    {
+                        OperatorReference = operatorReference;
+                        Route = route;
+                    }
             end
 
         type internal TimetableBusInformationModel =
@@ -231,6 +317,16 @@ module Service =
                 val mutable LowFloorStatus : string
                 [<JsonProperty(PropertyName = "route", Required = Required.Always)>]
                 val mutable Route : string
+
+                new (arrivalDateTime, destination, destinationLocalized, operatorName, lowFloorStatus, route) =
+                    {
+                        ArrivalDateTime = arrivalDateTime;
+                        Destination = destination;
+                        DestinationLocalized = destinationLocalized;
+                        OperatorName = operatorName;
+                        LowFloorStatus = lowFloorStatus;
+                        Route = route;
+                    }
             end
 
         type internal ServiceResponseModel<'a> =
@@ -251,7 +347,15 @@ module Service =
                 val mutable Results : 'a list
 
                 new (errorCode, errorMessage, stopId, route, numberOfResults, timeStamp, results) =
-                    {ErrorCode=errorCode;ErrorMessage=errorMessage;StopId=stopId;Route=route;NumberOfResults=numberOfResults;Timestamp=timeStamp;Results=results}
+                    {
+                        ErrorCode = errorCode;
+                        ErrorMessage = errorMessage;
+                        StopId = stopId;
+                        Route = route;
+                        NumberOfResults = numberOfResults;
+                        Timestamp = timeStamp;
+                        Results = results
+                    }
             end
 
         let internal serviceDateTimeFormat = "dd/MM/yyyy HH:mm:ss"
