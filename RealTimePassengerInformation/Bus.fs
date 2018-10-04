@@ -294,8 +294,8 @@ module Bus =
 
     module RouteInformation =
         type public BusStopInformation = {
-            StopId          : string;
-            DisplayedStopId : string;
+            StopId          : int;
+            DisplayedStopId : int;
             ShortName       : BusStopName;
             FullName        : BusStopName;
             Latitude        : float;

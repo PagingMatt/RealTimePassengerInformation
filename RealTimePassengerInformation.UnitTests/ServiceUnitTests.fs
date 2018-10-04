@@ -170,6 +170,48 @@ module Service =
                 raise (XunitException("Deserialization of valid JSON failed."))
 
         [<Fact>]
+        let ``validateServiceResponseModel_ErrorCodeSuccess_OkResults`` () =
+            let model = new ServiceResponseModel<string>(ResponseCode.Success, "", new Nullable<int>(), "", 3, "", ["a";"b";"c"])
+            let validationResult = validateServiceResponseModel model
+            Assert.Equal((Ok ["a";"b";"c"]), validationResult)
+
+        [<Fact>]
+        let ``validateServiceResponseModel_ErrorCodeNoResults_ErrorNoResults`` () =
+            let model = new ServiceResponseModel<string>(ResponseCode.NoResults, "", new Nullable<int>(), "", 0, "", [])
+            let validationResult = validateServiceResponseModel model
+            Assert.Equal((Error NoResults), validationResult)
+
+        [<Fact>]
+        let ``validateServiceResponseModel_ErrorCodeMissingParameter_ErrorInternalLibraryError`` () =
+            let model = new ServiceResponseModel<string>(ResponseCode.MissingParameter, "", new Nullable<int>(), "", 0, "", [])
+            let validationResult = validateServiceResponseModel model
+            Assert.Equal((Error InternalLibraryError), validationResult)
+
+        [<Fact>]
+        let ``validateServiceResponseModel_ErrorCodeInvalidParameter_ErrorInternalLibraryError`` () =
+            let model = new ServiceResponseModel<string>(ResponseCode.InvalidParameter, "", new Nullable<int>(), "", 0, "", [])
+            let validationResult = validateServiceResponseModel model
+            Assert.Equal((Error InternalLibraryError), validationResult)
+
+        [<Fact>]
+        let ``validateServiceResponseModel_ErrorCodeScheduledDowntime_ErrorScheduledServiceDowntime`` () =
+            let model = new ServiceResponseModel<string>(ResponseCode.ScheduledDowntime, "", new Nullable<int>(), "", 0, "", [])
+            let validationResult = validateServiceResponseModel model
+            Assert.Equal((Error ScheduledServiceDowntime), validationResult)
+
+        [<Fact>]
+        let ``validateServiceResponseModel_ErrorCodeScheduledDowntime_ErrorServiceError`` () =
+            let model = new ServiceResponseModel<string>(ResponseCode.UnexpectedSystemError, "", new Nullable<int>(), "", 0, "", [])
+            let validationResult = validateServiceResponseModel model
+            Assert.Equal((Error ServiceError), validationResult)
+
+        [<Fact>]
+        let ``validateServiceResponseModel_ErrorCodeUnknownEnumValue_ErrorInternalLibraryError`` () =
+            let model = new ServiceResponseModel<string>(enum<ResponseCode>(-1), "", new Nullable<int>(), "", 0, "", [])
+            let validationResult = validateServiceResponseModel model
+            Assert.Equal((Error InternalLibraryError), validationResult)
+
+        [<Fact>]
         let internal ``validateSingleResult_EmptyList_ErrorInternalLibraryError`` () =
             Assert.Equal(Error InternalLibraryError, validateSingleResult [])
 
