@@ -112,7 +112,7 @@ module Service =
                 expectedTimeSpan,
                 TimeSpan.ParseExact(
                     sampleTimeSpanString,
-                    serviceDateTimeFormat,
+                    serviceTimeSpanFormat,
                     CultureInfo.InvariantCulture))
 
         [<Theory>]
