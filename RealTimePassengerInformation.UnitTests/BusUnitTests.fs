@@ -7,38 +7,38 @@ module Bus =
     open RealTimePassengerInformation.Bus
 
     [<Fact>]
-    let ``deserializeDay_Sunday_SomeSunday`` () =
+    let internal ``deserializeDay_Sunday_SomeSunday`` () =
         Assert.Equal((Some Sunday), (deserializeDay "Sunday"))
 
     [<Fact>]
-    let ``deserializeDay_Monday_SomeMonday`` () =
+    let internal ``deserializeDay_Monday_SomeMonday`` () =
         Assert.Equal((Some Monday), (deserializeDay "Monday"))
 
     [<Fact>]
-    let ``deserializeDay_Tuesday_SomeTuesday`` () =
+    let internal ``deserializeDay_Tuesday_SomeTuesday`` () =
         Assert.Equal((Some Tuesday), (deserializeDay "Tuesday"))
 
     [<Fact>]
-    let ``deserializeDay_Wednesday_SomeWednesday`` () =
+    let internal ``deserializeDay_Wednesday_SomeWednesday`` () =
         Assert.Equal((Some Wednesday), (deserializeDay "Wednesday"))
 
     [<Fact>]
-    let ``deserializeDay_Thursday_SomeThursday`` () =
+    let internal ``deserializeDay_Thursday_SomeThursday`` () =
         Assert.Equal((Some Thursday), (deserializeDay "Thursday"))
 
     [<Fact>]
-    let ``deserializeDay_Friday_SomeFriday`` () =
+    let internal ``deserializeDay_Friday_SomeFriday`` () =
         Assert.Equal((Some Friday), (deserializeDay "Friday"))
 
     [<Fact>]
-    let ``deserializeDay_Saturday_SomeSaturday`` () =
+    let internal ``deserializeDay_Saturday_SomeSaturday`` () =
         Assert.Equal((Some Saturday), (deserializeDay "Saturday"))
 
     [<Theory>]
     [<InlineData(null)>]
     [<InlineData("")>]
     [<InlineData("foo")>]
-    let ``deserializeDay_Unrecognised_None`` day =
+    let internal ``deserializeDay_Unrecognised_None`` day =
         Assert.Equal(None, (deserializeDay day))
 
     [<Theory>]
@@ -49,20 +49,36 @@ module Bus =
     [<InlineData("thursday")>]
     [<InlineData("friday")>]
     [<InlineData("saturday")>]
-    let ``deserializeDay_ValidDayLowerCase_None`` day =
+    let internal ``deserializeDay_ValidDayLowerCase_None`` day =
         Assert.Equal(None, (deserializeDay day))
 
     [<Fact>]
-    let ``parseDateTimeExn_InvalidFormat_ThrowsFormatException`` () =
+    let internal ``parseDateTimeExn_InvalidFormat_ThrowsFormatException`` () =
         let invalidDateTime = "2018-10-04T23:27:00Z"
         let throwingAction () = (parseDateTimeExn invalidDateTime |> ignore)
         Assert.Throws<FormatException>(throwingAction)
 
     [<Fact>]
-    let ``parseTimeSpanExn_InvalidFormat_ThrowsFormatException`` () =
+    let internal ``parseDateTimeExn_ValidFormat_Parsable`` () =
+        let sampleDateTimeString = "29/09/2018 20:24:35"
+        let expectedDateTime = new DateTime(2018, 9, 29, 20, 24, 35)
+        Assert.Equal(
+            expectedDateTime,
+            parseDateTimeExn sampleDateTimeString)
+
+    [<Fact>]
+    let internal ``parseTimeSpanExn_InvalidFormat_ThrowsFormatException`` () =
         let invalidTimeSpan = "23:27:00Z"
         let throwingAction () = (parseTimeSpanExn invalidTimeSpan |> ignore)
         Assert.Throws<FormatException>(throwingAction)
+
+    [<Fact>]
+    let internal ``parseTimeSpanExn_ValidFormat_Parsable`` () =
+        let sampleTimeSpanString = "20:24:35"
+        let expectedTimeSpan = new TimeSpan(20, 24, 35)
+        Assert.Equal(
+            expectedTimeSpan,
+            parseTimeSpanExn sampleTimeSpanString)
 
     module BusStopInformation =
         open RealTimePassengerInformation.Bus.BusStopInformation
