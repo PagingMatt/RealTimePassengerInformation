@@ -2,6 +2,7 @@
 
 open System
 open Xunit
+open Xunit.Sdk
 
 module Bus =
     open RealTimePassengerInformation.Bus
@@ -82,6 +83,84 @@ module Bus =
 
     module BusStopInformation =
         open RealTimePassengerInformation.Bus.BusStopInformation
+        open RealTimePassengerInformation.Service
+        open RealTimePassengerInformation.Service.Models
+
+        [<Fact>]
+        let ``make_LastUpdatedInvalidFormat_ErrorInternalLibraryError`` () =
+            let model = new BusStopInformationModel(0, 0, "", "", "", "", 0.0, 0.0, "2018-10-04T23:27:00Z", [])
+            Assert.Equal((Error InternalLibraryError), (make model))
+
+        [<Fact>]
+        let ``make_ValidModel_OkStopIdSetToStopIdInModel`` () =
+            let model = new BusStopInformationModel(1, 0, "", "", "", "", 0.0, 0.0, "04/10/2018 23:27:00", [])
+            match make model with
+            | Ok result -> Assert.Equal(1, result.StopId)
+            | _         -> raise (XunitException("Make did not result in Ok <result>."))
+
+        [<Fact>]
+        let ``make_ValidModel_OkDisplayStopIdSetToDisplayStopIdInModel`` () =
+            let model = new BusStopInformationModel(0, 1, "", "", "", "", 0.0, 0.0, "04/10/2018 23:27:00", [])
+            match make model with
+            | Ok result -> Assert.Equal(1, result.DisplayedStopId)
+            | _         -> raise (XunitException("Make did not result in Ok <result>."))
+
+        [<Fact>]
+        let ``make_ValidModel_OkShortEnglishNameSetToShortNameInModel`` () =
+            let model = new BusStopInformationModel(0, 0, "a", "", "", "", 0.0, 0.0, "04/10/2018 23:27:00", [])
+            match make model with
+            | Ok result -> Assert.Equal("a", result.ShortName.EnglishName)
+            | _         -> raise (XunitException("Make did not result in Ok <result>."))
+
+        [<Fact>]
+        let ``make_ValidModel_OkShortIrishNameSetToShortNameLocalizedInModel`` () =
+            let model = new BusStopInformationModel(0, 0, "", "a", "", "", 0.0, 0.0, "04/10/2018 23:27:00", [])
+            match make model with
+            | Ok result -> Assert.Equal("a", result.ShortName.IrishName)
+            | _         -> raise (XunitException("Make did not result in Ok <result>."))
+
+        [<Fact>]
+        let ``make_ValidModel_OkFullEnglishNameSetToFullNameInModel`` () =
+            let model = new BusStopInformationModel(0, 0, "", "", "a", "", 0.0, 0.0, "04/10/2018 23:27:00", [])
+            match make model with
+            | Ok result -> Assert.Equal("a", result.FullName.EnglishName)
+            | _         -> raise (XunitException("Make did not result in Ok <result>."))
+
+        [<Fact>]
+        let ``make_ValidModel_OkFullIrishNameSetToFullNameLocalizedInModel`` () =
+            let model = new BusStopInformationModel(0, 0, "", "", "", "a", 0.0, 0.0, "04/10/2018 23:27:00", [])
+            match make model with
+            | Ok result -> Assert.Equal("a", result.FullName.IrishName)
+            | _         -> raise (XunitException("Make did not result in Ok <result>."))
+
+        [<Fact>]
+        let ``make_ValidModel_OkLatitudeSetToLatitudeInModel`` () =
+            let model = new BusStopInformationModel(0, 0, "", "", "", "", 1.0, 0.0, "04/10/2018 23:27:00", [])
+            match make model with
+            | Ok result -> Assert.Equal(1.0, result.Latitude)
+            | _         -> raise (XunitException("Make did not result in Ok <result>."))
+
+        [<Fact>]
+        let ``make_ValidModel_OkLatitudeSetToLongitudeInModel`` () =
+            let model = new BusStopInformationModel(0, 0, "", "", "", "", 0.0, 1.0, "04/10/2018 23:27:00", [])
+            match make model with
+            | Ok result -> Assert.Equal(1.0, result.Longitude)
+            | _         -> raise (XunitException("Make did not result in Ok <result>."))
+
+        [<Fact>]
+        let ``make_ValidModel_OkLastUpdatedSetToLastUpdatedInModel`` () =
+            let model = new BusStopInformationModel(0, 0, "", "", "", "", 0.0, 0.0, "04/10/2018 23:27:00", [])
+            match make model with
+            | Ok result -> Assert.Equal(new DateTime(2018, 10, 4, 23, 27, 0), result.LastUpdated)
+            | _         -> raise (XunitException("Make did not result in Ok <result>."))
+
+        [<Fact>]
+        let ``make_ValidModel_OkOperatorsMappedFromOperatorsInModel`` () =
+            let stopOperator = new StopOperator("a", ["b";"c"])
+            let model = new BusStopInformationModel(0, 0, "", "", "", "", 0.0, 0.0, "04/10/2018 23:27:00", [stopOperator])
+            match make model with
+            | Ok result -> Assert.Equal<BusStopOperator list>([{Name="a"; Routes=["b";"c"]}], result.Operators)
+            | _         -> raise (XunitException("Make did not result in Ok <result>."))
 
     module DailyTimeTableInformation =
         open RealTimePassengerInformation.Bus.DailyTimeTableInformation
