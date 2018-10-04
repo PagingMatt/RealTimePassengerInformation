@@ -170,14 +170,14 @@ module Service =
                 raise (XunitException("Deserialization of valid JSON failed."))
 
         [<Fact>]
-        let ``validateSingleResult_EmptyList_ErrorInternalLibraryError`` () =
+        let internal ``validateSingleResult_EmptyList_ErrorInternalLibraryError`` () =
             Assert.Equal(Error InternalLibraryError, validateSingleResult [])
 
         [<Fact>]
-        let ``validateSingleResult_TwoElementList_ErrorInternalLibraryError`` () =
+        let internal ``validateSingleResult_TwoElementList_ErrorInternalLibraryError`` () =
             Assert.Equal(Error InternalLibraryError, validateSingleResult ["a";"b"])
 
         [<Fact>]
-        let ``validateSingleResult_OneElementList_OkWithTheElement`` () =
+        let internal ``validateSingleResult_OneElementList_OkWithTheElement`` () =
             let element = "a"
             Assert.Equal(Ok element, validateSingleResult [element])
