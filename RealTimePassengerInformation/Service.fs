@@ -249,6 +249,9 @@ module Service =
                 val mutable Timestamp : string
                 [<JsonProperty(PropertyName = "results", Required = Required.Always)>]
                 val mutable Results : 'a list
+
+                new (errorCode, errorMessage, stopId, route, numberOfResults, timeStamp, results) =
+                    {ErrorCode=errorCode;ErrorMessage=errorMessage;StopId=stopId;Route=route;NumberOfResults=numberOfResults;Timestamp=timeStamp;Results=results}
             end
 
         let internal serviceDateTimeFormat = "dd/MM/yyyy HH:mm:ss"
