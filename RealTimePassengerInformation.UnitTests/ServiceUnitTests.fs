@@ -104,6 +104,17 @@ module Service =
                     serviceDateTimeFormat,
                     CultureInfo.InvariantCulture))
 
+        [<Fact>]
+        let internal ``serviceDateTimeFormat_ForTimeSpanFromService_Parsable`` () =
+            let sampleTimeSpanString = "20:24:35"
+            let expectedTimeSpan = new TimeSpan(20, 24, 35)
+            Assert.Equal(
+                expectedTimeSpan,
+                TimeSpan.ParseExact(
+                    sampleTimeSpanString,
+                    serviceTimeSpanFormat,
+                    CultureInfo.InvariantCulture))
+
         [<Theory>]
         [<InlineData(@"}")>]
         let internal ``deserializeServiceResponseModel_InvalidJson_ErrorInternalLibraryError`` json =
@@ -157,3 +168,16 @@ module Service =
                 Assert.Equal("1", model.Route)
             | _ ->
                 raise (XunitException("Deserialization of valid JSON failed."))
+
+        [<Fact>]
+        let internal ``validateSingleResult_EmptyList_ErrorInternalLibraryError`` () =
+            Assert.Equal(Error InternalLibraryError, validateSingleResult [])
+
+        [<Fact>]
+        let internal ``validateSingleResult_TwoElementList_ErrorInternalLibraryError`` () =
+            Assert.Equal(Error InternalLibraryError, validateSingleResult ["a";"b"])
+
+        [<Fact>]
+        let internal ``validateSingleResult_OneElementList_OkWithTheElement`` () =
+            let element = "a"
+            Assert.Equal(Ok element, validateSingleResult [element])
