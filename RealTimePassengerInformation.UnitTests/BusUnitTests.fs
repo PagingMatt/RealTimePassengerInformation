@@ -219,6 +219,131 @@ module Bus =
     module RealTimeBusInformation =
         open RealTimePassengerInformation.Bus.RealTimeBusInformation
 
+        [<Fact>]
+        let ``makeSafe_ValidModel_ArrivalExpectedSetToDateTimeMin`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.Equal(DateTime.MinValue, (makeSafe model).Arrival.Expected)
+
+        [<Fact>]
+        let ``makeSafe_ValidModel_ArrivalScheduledSetToDateTimeMin`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.Equal(DateTime.MinValue, (makeSafe model).Arrival.Scheduled)
+
+        [<Fact>]
+        let ``makeSafe_ValidModel_ArrivalBoardStatusSetToDue`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.Equal(Due, (makeSafe model).Arrival.BoardStatus)
+
+        [<Fact>]
+        let ``makeSafe_ValidModel_DepartureExpectedSetToDateTimeMin`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.Equal(DateTime.MinValue, (makeSafe model).Departure.Expected)
+
+        [<Fact>]
+        let ``makeSafe_ValidModel_DepartureScheduledSetToDateTimeMin`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.Equal(DateTime.MinValue, (makeSafe model).Departure.Scheduled)
+
+        [<Fact>]
+        let ``makeSafe_ValidModel_DepartureBoardStatusSetToDue`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.Equal(Due, (makeSafe model).Departure.BoardStatus)
+
+        [<Fact>]
+        let ``makeSafe_ValidModel_OriginEnglishNameSetToOriginInModel`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.Equal(model.Origin, (makeSafe model).Origin.EnglishName)
+
+        [<Fact>]
+        let ``makeSafe_ValidModel_OriginIrishNameSetToOriginLocalizedInModel`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.Equal(model.OriginLocalized, (makeSafe model).Origin.IrishName)
+
+        [<Fact>]
+        let ``makeSafe_ValidModel_DestinationEnglishNameSetToDestinationInModel`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.Equal(model.Destination, (makeSafe model).Destination.EnglishName)
+
+        [<Fact>]
+        let ``makeSafe_ValidModel_DestinationIrishNameSetToDestinationLocalizedInModel`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.Equal(model.DestinationLocalized, (makeSafe model).Destination.IrishName)
+
+        [<Fact>]
+        let ``makeSafe_ValidModel_DirectionSetToDirectionInModel`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.Equal(model.Direction, (makeSafe model).Direction)
+
+        [<Fact>]
+        let ``makeSafe_ValidModel_OperatorReferenceCodeSetToOperatorReferenceCodeInModel`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.Equal(model.OperatorReferenceCode, (makeSafe model).OperatorReferenceCode)
+
+        [<Fact>]
+        let ``makeSafe_ValidModel_AdditionalInformationSetToAdditionalInformationInModel`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.Equal(model.AdditionalInformation, (makeSafe model).AdditionalInformation)
+
+        [<Fact>]
+        let ``makeSafe_ValidModel_HasLowFloorSetToFalse`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.False((makeSafe model).HasLowFloor)
+
+        [<Fact>]
+        let ``makeSafe_ValidModel_RouteSetToRouteInModel`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.Equal(model.Route, (makeSafe model).Route)
+
+        [<Fact>]
+        let ``makeSafe_ValidModel_SourceTimeStampSetToDateTimeMin`` () =
+            let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
+            Assert.Equal(DateTime.MinValue, (makeSafe model).SourceTimeStamp)
+
+        [<Fact>]
+        let ``deserializeBoardStatus_Due_SomeDue`` () =
+            Assert.Equal(Some Due, deserializeBoardStatus "Due")
+
+        [<Theory>]
+        [<InlineData(1)>]
+        [<InlineData(15)>]
+        let ``deserializeBoardStatus_IntMinutes_SomeExpectedInMinutesInt`` mins =
+            Assert.Equal(Some (ExpectedInMinutes mins), deserializeBoardStatus (mins.ToString()))
+
+        [<Theory>]
+        [<InlineData("")>]
+        [<InlineData("one")>]
+        let ``deserializeBoardStatus_NotDueOrInt_None`` mins =
+            Assert.Equal(None, deserializeBoardStatus mins)
+
+        [<Fact>]
+        let ``deserializeBoardStatus_DueLowerCase_None`` () =
+            Assert.Equal(None, deserializeBoardStatus "due")
+
+        [<Fact>]
+        let ``deserializeLowFloorStatus_yes_SomeTrue`` () =
+            Assert.Equal(Some true, deserializeLowFloorStatus "yes")
+
+        [<Fact>]
+        let ``deserializeLowFloorStatus_no_SomeFalse`` () =
+            Assert.Equal(Some false, deserializeLowFloorStatus "no")
+
+        [<Theory>]
+        [<InlineData("Yes")>]
+        [<InlineData("YES")>]
+        [<InlineData("No")>]
+        [<InlineData("NO")>]
+        let ``deserializeLowFloorStatus_NotLowerCaseYesNo_None`` lowFloorStatus =
+            Assert.Equal(None, deserializeLowFloorStatus lowFloorStatus)
+
+        [<Theory>]
+        [<InlineData("")>]
+        [<InlineData("false")>]
+        [<InlineData("true")>]
+        [<InlineData("0")>]
+        [<InlineData("1")>]
+        let ``deserializeLowFloorStatus_Unrecognised_None`` lowFloorStatus =
+            Assert.Equal(None, deserializeLowFloorStatus lowFloorStatus)
+
     module RouteInformation =
         open RealTimePassengerInformation.Bus.RouteInformation
 
