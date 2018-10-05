@@ -162,9 +162,6 @@ module Bus =
             | Ok result -> Assert.Equal<BusStopOperator list>([{Name="e"; Routes=["f";"g"]}], result.Operators)
             | _         -> raise (XunitException("Make did not result in Ok <result>."))
 
-    module DailyTimeTableInformation =
-        open RealTimePassengerInformation.Bus.DailyTimeTableInformation
-
     module FullTimeTableInformation =
         open RealTimePassengerInformation.Bus.FullTimeTableInformation
 
