@@ -6,6 +6,10 @@ open System.Runtime.CompilerServices
 open Newtonsoft.Json
 
 module Service =
+    /// <summary>
+    /// The union of errors types that can cause a query to the RTPI service
+    /// from the library to fail.
+    /// </summary>
     type public ApiError =
         | NoResults
         | InternalLibraryError
