@@ -27,7 +27,6 @@ module Service =
                     else
                         return Error InternalLibraryError
                 with
-                | :? InvalidOperationException -> return Error InternalLibraryError
                 | :? HttpRequestException      -> return Error NetworkError
             }
 
