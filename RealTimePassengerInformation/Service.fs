@@ -7,8 +7,8 @@ open Newtonsoft.Json
 
 module Service =
     /// <summary>
-    /// The union of errors that can cause failures when querying the RTPI
-    /// service.
+    /// The union of errors types that can cause a query to the RTPI service
+    /// from the library to fail.
     /// </summary>
     type public ApiError =
         | NoResults
