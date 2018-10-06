@@ -728,6 +728,7 @@ module Bus =
                 Assert.Equal<T list>(
                     [
                         {
+                            Route = "1"
                             OperatorName="a";
                             Origin={EnglishName="b";IrishName="c"};
                             Destination={EnglishName="d";IrishName="e"};
