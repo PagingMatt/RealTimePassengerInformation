@@ -5,7 +5,7 @@ open System.Net
 open System.Net.Http
 open RealTimePassengerInformation.Service
 open RealTimePassengerInformation.Service.Client
-open RealTimePassengerInformation.Service.Models
+open RealTimePassengerInformation.Service.Models.Definitions
 open RealTimePassengerInformation.UnitTests.Helpers
 open Xunit
 open Xunit.Sdk

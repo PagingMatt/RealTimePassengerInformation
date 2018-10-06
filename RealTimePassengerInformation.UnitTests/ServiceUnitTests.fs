@@ -121,10 +121,9 @@ module Service =
             Assert.Equal(expectedUri, actualUri)
 
     module Models =
-        open System
         open System.Globalization
-        open RealTimePassengerInformation.Service
         open RealTimePassengerInformation.Service.Models
+        open RealTimePassengerInformation.Service.Models.Definitions
 
         [<Fact>]
         let internal ``serviceDateTimeFormat_ForDateTimeFromService_Parsable`` () =
