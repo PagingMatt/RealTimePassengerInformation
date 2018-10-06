@@ -3,9 +3,8 @@
 open System
 open System.Net
 open System.Net.Http
-open System.Threading
-open System.Threading.Tasks
 open RealTimePassengerInformation.Service
+open RealTimePassengerInformation.UnitTests.Helpers
 open Xunit
 open Xunit.Sdk
 
@@ -13,40 +12,23 @@ module Service =
     module Client =
         open RealTimePassengerInformation.Service.Client
 
-        type TestHttpMessageHandler(ex, content, code) =
-            inherit HttpMessageHandler()
-
-            let Ex : Exception option = ex
-            let Content : HttpContent option = content
-            let Code : HttpStatusCode option = code
-
-            override this.SendAsync ((_:HttpRequestMessage), (_:CancellationToken)) =
-                match Ex with
-                | Some ex -> Task.FromResult(raise ex)
-                | None ->
-                match Content with
-                | Some content ->
-                    let response = new HttpResponseMessage(HttpStatusCode.OK)
-                    response.Content <- content
-                    Task.FromResult<HttpResponseMessage>(response)
-                | None ->
-                match Code with
-                | Some code ->
-                    let response = new HttpResponseMessage(code)
-                    Task.FromResult<HttpResponseMessage>(response)
-                | None -> raise (XunitException("TestHttpMessageHandler helper class setup incorrect."))
+        [<Fact>]
+        let ``getEndpointContent_NullMessageHandler_ErrorUserError`` () =
+            let client = {HttpHandler = null}
+            let asyncResult = getEndpointContent client "http://localhost"
+            Assert.Equal((Error UserError), Async.RunSynchronously asyncResult)
 
         [<Fact>]
         let ``getEndpointContent_NetworkIssue_ErrorNetworkError`` () =
-            let handler = new TestHttpMessageHandler((Some (upcast new HttpRequestException())), None, None)
-            let asyncResult = getEndpointContent handler "http://localhost"
+            let client = {HttpHandler = new TestHttpMessageHandler((Some (upcast new HttpRequestException())), None, None)}
+            let asyncResult = getEndpointContent client "http://localhost"
             Assert.Equal((Error NetworkError), Async.RunSynchronously asyncResult)
 
         [<Fact>]
         let ``getEndpointContent_ContentReturned_OkContentAsString`` () =
             let content : HttpContent = upcast new StringContent("Content.")
-            let handler = new TestHttpMessageHandler(None, Some content, None)
-            let asyncResult = getEndpointContent handler "http://localhost"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, Some content, None)}
+            let asyncResult = getEndpointContent client "http://localhost"
             Assert.Equal((Ok "Content."), Async.RunSynchronously asyncResult)
 
         [<Theory>]
@@ -54,8 +36,8 @@ module Service =
         [<InlineData(HttpStatusCode.NotFound)>]
         [<InlineData(HttpStatusCode.InternalServerError)>]
         let ``getEndpointContent_NotSuccessStatusCode_ErrorInternalLibraryError`` code =
-            let handler = new TestHttpMessageHandler(None, None, (Some code))
-            let asyncResult = getEndpointContent handler "http://localhost"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, None, (Some code))}
+            let asyncResult = getEndpointContent client "http://localhost"
             Assert.Equal((Error InternalLibraryError), Async.RunSynchronously asyncResult)
 
     module Endpoints =
