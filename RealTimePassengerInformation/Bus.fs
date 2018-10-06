@@ -420,6 +420,7 @@ module Bus =
         /// served.
         /// </summary>
         type public T = {
+            Route        : string;
             OperatorName : string;
             Origin       : BusStopName;
             Destination  : BusStopName;
@@ -442,8 +443,9 @@ module Bus =
             Longitude = m.Longitude
         }
 
-        let internal make mapSucceeding (m:RouteInformationModel) =
+        let internal make route mapSucceeding (m:RouteInformationModel) =
             let safeRecord = {
+                Route = route
                 OperatorName = m.OperatorName
                 Origin = {
                     EnglishName = m.Origin
@@ -487,7 +489,7 @@ module Bus =
                 |> getEndpointContent client
                 >>> deserializeServiceResponseModel<RouteInformationModel>
                 >>> validateServiceResponseModel
-                >>< List.mapFold make true
+                >>< List.mapFold (make route) true
                 >>> fun (rs,mapSucceeded) ->
                         if mapSucceeded then Ok rs
                         else Error InternalLibraryError
