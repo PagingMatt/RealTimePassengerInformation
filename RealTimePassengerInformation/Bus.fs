@@ -256,6 +256,13 @@ module Bus =
             | ExpectedInMinutes of int
 
         /// <summary>
+        /// Buses are either going in the 'Inbound' or 'Outbound' directions.
+        /// </summary>
+        type public Direction =
+            | Inbound
+            | Outbound
+
+        /// <summary>
         /// Times in data from the real-time endpoint have three properties:
         /// expected time, originally scheduled time and the status on the bus
         /// stop electronic board.
@@ -278,7 +285,7 @@ module Bus =
             Departure             : RealTimeSlot;
             Origin                : BusStopName;
             Destination           : BusStopName;
-            Direction             : string;
+            Direction             : Direction;
             OperatorReferenceCode : string;
             AdditionalInformation : string;
             HasLowFloor           : bool;
@@ -314,7 +321,7 @@ module Bus =
                 EnglishName = m.Destination
                 IrishName = m.DestinationLocalized
             }
-            Direction = m.Direction
+            Direction = Inbound
             OperatorReferenceCode = m.OperatorReferenceCode
             AdditionalInformation = m.AdditionalInformation
             HasLowFloor = false
@@ -328,6 +335,12 @@ module Bus =
             | mins  ->
                 try Some (ExpectedInMinutes (Int32.Parse mins))
                 with :? FormatException -> None
+
+        let internal deserializeDirection direction =
+            match direction with
+            | "Inbound"  -> Some Inbound
+            | "Outbound" -> Some Outbound
+            | _          -> None
 
         let internal deserializeLowFloorStatus lowFloorStatus =
             match lowFloorStatus with
@@ -345,6 +358,9 @@ module Bus =
                 match deserializeBoardStatus m.DepartureDueTime with
                 | None -> (safeRecord,false)
                 | Some departureDue ->
+                match deserializeDirection m.Direction with
+                | None -> (safeRecord,false)
+                | Some direction ->
                 match deserializeLowFloorStatus m.LowFloorStatus with
                 | None -> (safeRecord,false)
                 | Some lowFloorStatus ->
@@ -365,6 +381,7 @@ module Bus =
                             Scheduled = parsedDepartureScheduled
                             BoardStatus = departureDue
                         }
+                        Direction = direction
                         HasLowFloor = lowFloorStatus
                         SourceTimeStamp = parsedSourceTimeStamp
                 }, mapSucceeding)
