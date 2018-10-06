@@ -1,11 +1,11 @@
 ﻿namespace RealTimePassengerInformation.UnitTests
 
+open System.Threading.Tasks
 open Xunit
 
 module Shared =
     module Operators =
         open RealTimePassengerInformation.Shared.Operators
-        open System.Threading.Tasks
 
         [<Fact>]
         let internal ``>>>_Error_Error`` () =

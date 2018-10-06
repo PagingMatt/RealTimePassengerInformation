@@ -1,6 +1,7 @@
 ﻿namespace RealTimePassengerInformation.UnitTests
 
 open System
+open System.Globalization
 open System.Net
 open System.Net.Http
 open RealTimePassengerInformation.Service
@@ -121,9 +122,7 @@ module Service =
             Assert.Equal(expectedUri, actualUri)
 
     module Models =
-        open System
-        open System.Globalization
-        open RealTimePassengerInformation.Service
+        open RealTimePassengerInformation.Definitions
         open RealTimePassengerInformation.Service.Models
 
         [<Fact>]

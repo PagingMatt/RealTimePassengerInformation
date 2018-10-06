@@ -3,11 +3,12 @@ namespace RealTimePassengerInformation
 open System
 open System.Runtime.CompilerServices
 open Service
-open Service.Client
-open Service.Endpoints
-open Service.Models
-open Shared.Formatting
-open Shared.Operators
+open RealTimePassengerInformation.Definitions
+open RealTimePassengerInformation.Service.Client
+open RealTimePassengerInformation.Service.Endpoints
+open RealTimePassengerInformation.Service.Models
+open RealTimePassengerInformation.Shared.Formatting
+open RealTimePassengerInformation.Shared.Operators
 
 module Bus =
     /// <summary>
