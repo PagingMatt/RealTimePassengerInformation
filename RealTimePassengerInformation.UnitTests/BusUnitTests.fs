@@ -464,9 +464,9 @@ module Bus =
             Assert.Equal(model.DestinationLocalized, (makeSafe model).Destination.IrishName)
 
         [<Fact>]
-        let ``makeSafe_ValidModel_DirectionSetToDirectionInModel`` () =
+        let ``makeSafe_ValidModel_DirectionSetToInbound`` () =
             let model = new RealTimeBusInformationModel("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p")
-            Assert.Equal(model.Direction, (makeSafe model).Direction)
+            Assert.Equal<Direction>(Inbound, (makeSafe model).Direction)
 
         [<Fact>]
         let ``makeSafe_ValidModel_OperatorReferenceCodeSetToOperatorReferenceCodeInModel`` () =
@@ -583,6 +583,7 @@ module Bus =
         [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'x','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
         [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018T16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
         [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018T16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'x','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
         [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'x','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
         [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018T16:15:00','stops':[]}")>]
         let ``getRealTimeBusInformation_CannotDeserializeInMake_ErrorInternalLibraryError`` responseResult =
@@ -592,7 +593,7 @@ module Bus =
             Assert.Equal(Error InternalLibraryError, unwrappedResult)
 
         [<Theory>]
-        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00'}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Outbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00'}")>]
         let ``getFullTimetableInformation_ResponseValid_OkResponse`` responseResult =
             let response = @"{'errorcode':'0','errormessage':'','stopid':'1','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
             let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
@@ -617,7 +618,7 @@ module Bus =
                                 };
                                 Origin={EnglishName="c";IrishName="d"};
                                 Destination={EnglishName="a";IrishName="b"};
-                                Direction="Inbound";
+                                Direction=Outbound;
                                 OperatorReferenceCode="e";
                                 AdditionalInformation="f";
                                 HasLowFloor=true;
