@@ -265,6 +265,77 @@ module Bus =
             let model = new FullTimetableBusInformationModel("Monday", "Tuesday", "a", "b", "04/10/2018 23:27:00", ["c"])
             Assert.Equal<TimeSpan list>([], (makeSafe model).Departures)
 
+        [<Fact>]
+        let ``getFullTimetableInformation_ServiceErrorInResponseStatusCode_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, None, (Some HttpStatusCode.BadRequest))}
+            let result = getFullTimetableInformation client 1 "1"
+            Assert.Equal<Result<FullTimeTableInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getFullTimetableInformation_UserErrorInClientSetup_ErrorUserError`` () =
+            let client = {HttpHandler = null}
+            let result = getFullTimetableInformation client 1 "1"
+            Assert.Equal<Result<FullTimeTableInformation.T, ApiError>>(Error UserError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getFullTimetableInformation_NetworkErrorOnRequest_ErrorNetworkError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler((Some (upcast new HttpRequestException())), None, None)}
+            let result = getFullTimetableInformation client 1 "1"
+            Assert.Equal<Result<FullTimeTableInformation.T, ApiError>>(Error NetworkError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getFullTimetableInformation_CannotDeserializeClientResponse_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent("{"))), None)}
+            let result = getFullTimetableInformation client 1 "1"
+            Assert.Equal<Result<FullTimeTableInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Theory>]
+        [<InlineData(@"{'errorcode':'1','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'2','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'3','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'4','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'5','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'6','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        let ``getFullTimetableInformation_ResultIsServiceFailureResult_Error`` response =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let result = getFullTimetableInformation client 1 "1"
+            match Async.RunSynchronously result with
+            | Error _ -> ignore
+            | Ok _    -> raise (new XunitException("Error response code did not fail call."))
+
+        [<Theory>]
+        [<InlineData(@"{'startdayofweek':'','enddayofweek':'Tuesday','destination':'a','destinationlocalized':'b','lastupdated':'06/10/2018 16:15:00','departures':['01:01:01','02:02:02']}")>]
+        [<InlineData(@"{'startdayofweek':'Monday','enddayofweek':'','destination':'a','destinationlocalized':'b','lastupdated':'06/10/2018 16:15:00','departures':['01:01:01','02:02:02']}")>]
+        [<InlineData(@"{'startdayofweek':'Monday','enddayofweek':'Tuesday','destination':'a','destinationlocalized':'b','lastupdated':'06/10/2018T16:15:00','departures':['01:01:01','02:02:02']}")>]
+        [<InlineData(@"{'startdayofweek':'Monday','enddayofweek':'Tuesday','destination':'a','destinationlocalized':'b','lastupdated':'06/10/2018 16:15:00','departures':['01:01:01Z','02:02:02']}")>]
+        let ``getFullTimetableInformation_CannotDeserializeInMake_ErrorInternalLibraryError`` responseResult =
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getFullTimetableInformation client 1 "1" |> Async.RunSynchronously
+            Assert.Equal(Error InternalLibraryError, unwrappedResult)
+
+        [<Fact>]
+        let ``getFullTimetableInformation_ResponseValid_OkResponse`` () =
+            let responseResult = @"{'startdayofweek':'Monday','enddayofweek':'Tuesday','destination':'a','destinationlocalized':'b','lastupdated':'06/10/2018 16:15:00','departures':['01:01:01','02:02:02']}"
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getFullTimetableInformation client 1 "1" |> Async.RunSynchronously
+            match unwrappedResult with
+            | Error _   -> raise (new XunitException("Valid response should have 'Ok ...' result."))
+            | Ok result ->
+                Assert.Equal(1, result.StopId)
+                Assert.Equal("1", result.Route)
+                Assert.Equal<TimeTableEntry list>(
+                    [
+                        {
+                            StartDayOfWeek=Monday;
+                            EndDayOfWeek=Tuesday;
+                            Destination={EnglishName="a";IrishName="b"};
+                            LastUpdated=new DateTime(2018, 10, 6, 16, 15, 0);
+                            Departures=[new TimeSpan(1,1,1);new TimeSpan(2,2,2)]
+                        }
+                    ], result.TimeTableEntries)
+
     module OperatorInformation =
         open RealTimePassengerInformation.Bus.OperatorInformation
 
@@ -283,6 +354,7 @@ module Bus =
             let model = new OperatorInformationModel("a", "b", "c")
             Assert.Equal("c", (make model).Description)
 
+        
     module RealTimeBusInformation =
         open RealTimePassengerInformation.Bus.RealTimeBusInformation
 
