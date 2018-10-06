@@ -1,6 +1,7 @@
 ﻿namespace RealTimePassengerInformation
 
 open System
+open System.Diagnostics.CodeAnalysis
 open System.Net.Http
 open System.Runtime.CompilerServices
 open Newtonsoft.Json
@@ -86,7 +87,7 @@ module Service =
             | ScheduledDowntime = 4
             | UnexpectedSystemError = 5
 
-        [<System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage>]
+        [<ExcludeFromCodeCoverage>]
         module Definitions =
             type internal RouteStop =
                 struct
