@@ -3,9 +3,9 @@
 open System
 open System.Net
 open System.Net.Http
+open RealTimePassengerInformation.Definitions
 open RealTimePassengerInformation.Service
 open RealTimePassengerInformation.Service.Client
-open RealTimePassengerInformation.Service.Models.Definitions
 open RealTimePassengerInformation.UnitTests.Helpers
 open Xunit
 open Xunit.Sdk

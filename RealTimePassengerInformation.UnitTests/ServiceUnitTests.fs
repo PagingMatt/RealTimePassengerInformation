@@ -1,6 +1,7 @@
 ﻿namespace RealTimePassengerInformation.UnitTests
 
 open System
+open System.Globalization
 open System.Net
 open System.Net.Http
 open RealTimePassengerInformation.Service
@@ -121,9 +122,8 @@ module Service =
             Assert.Equal(expectedUri, actualUri)
 
     module Models =
-        open System.Globalization
+        open RealTimePassengerInformation.Definitions
         open RealTimePassengerInformation.Service.Models
-        open RealTimePassengerInformation.Service.Models.Definitions
 
         [<Fact>]
         let internal ``serviceDateTimeFormat_ForDateTimeFromService_Parsable`` () =

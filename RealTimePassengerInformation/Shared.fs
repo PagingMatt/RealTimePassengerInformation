@@ -1,5 +1,7 @@
 ﻿namespace RealTimePassengerInformation
 
+open System.Runtime.CompilerServices
+
 module Shared =
     module Operators =
         let internal (>>>) x f =
@@ -22,3 +24,6 @@ module Shared =
         open System.Globalization
 
         let internal inv = CultureInfo.InvariantCulture
+
+[<assembly: InternalsVisibleTo("RealTimePassengerInformation.UnitTests")>]
+do()

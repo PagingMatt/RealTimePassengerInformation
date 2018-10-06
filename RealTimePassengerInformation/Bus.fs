@@ -3,10 +3,10 @@ namespace RealTimePassengerInformation
 open System
 open System.Runtime.CompilerServices
 open Service
+open RealTimePassengerInformation.Definitions
 open RealTimePassengerInformation.Service.Client
 open RealTimePassengerInformation.Service.Endpoints
 open RealTimePassengerInformation.Service.Models
-open RealTimePassengerInformation.Service.Models.Definitions
 open RealTimePassengerInformation.Shared.Formatting
 open RealTimePassengerInformation.Shared.Operators
 
