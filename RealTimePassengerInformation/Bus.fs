@@ -97,16 +97,19 @@ module Bus =
         /// <summary>
         /// Asynchronously gets information about a given bus stop.
         /// </summary>
+        /// <param name="client">
+        /// Client type to pass through when calling the service.
+        /// </param>
         /// <param name="stopId">
         /// ID of the bus stop to get information for.
         /// </param>
         /// <returns>
         /// Information about the bus stop with ID <param name="stopId" />.
         /// </returns>
-        let public getBusStopInformation (stopId:int) : Async<Result<T, ApiError>> =
+        let public getBusStopInformation (client:Client.T) (stopId:int) : Async<Result<T, ApiError>> =
             [("stopid",stopId.ToString())]
             |> buildUri defaultServiceEndpoint BusStopInformation
-            |> getEndpointContent defaultHandler
+            |> getEndpointContent client
             >>> deserializeServiceResponseModel<BusStopInformationModel>
             >>> validateServiceResponseModel
             >>> validateSingleResult
@@ -173,6 +176,9 @@ module Bus =
         /// Asynchronously gets the timetable information for a given route
         /// serving a given bus stop.
         /// </summary>
+        /// <param name="client">
+        /// Client type to pass through when calling the service.
+        /// </param>
         /// <param name="stopId">
         /// ID of the bus stop to get timetable information for.
         /// </param>
@@ -183,11 +189,11 @@ module Bus =
         /// Timetable information for the <param name="route" /> serving the bus
         /// stop with ID <param name="stopId" />.
         /// </returns>
-        let public getFullTimetableInformation (stopId:int) (route:string)
+        let public getFullTimetableInformation (client:Client.T) (stopId:int) (route:string)
             : Async<Result<T, ApiError>> =
                 [("type","week");("stopid",stopId.ToString());("routeid",route)]
                 |> buildUri defaultServiceEndpoint TimetableInformation
-                |> getEndpointContent defaultHandler
+                |> getEndpointContent client
                 >>> deserializeServiceResponseModel<FullTimetableBusInformationModel>
                 >>> validateServiceResponseModel
                 >>< List.mapFold make true
@@ -226,9 +232,15 @@ module Bus =
         /// Asynchronously gets the meta-data for all route operators known to
         /// RTPI.
         /// </summary>
-        let public getOperatorInformation () : Async<Result<T, ApiError>> =
+        /// <param name="client">
+        /// Client type to pass through when calling the service.
+        /// </param>
+        /// <returns>
+        /// Meta-data for all route operators known to RTPI.
+        /// </returns>
+        let public getOperatorInformation (client:Client.T) : Async<Result<T, ApiError>> =
             buildUri defaultServiceEndpoint OperatorInformation []
-            |> getEndpointContent defaultHandler
+            |> getEndpointContent client
             >>> deserializeServiceResponseModel<OperatorInformationModel>
             >>> validateServiceResponseModel
             >>< List.map make
@@ -361,6 +373,9 @@ module Bus =
         /// Asynchronously gets the real-time arrival information for a given
         /// bus stop.
         /// </summary>
+        /// <param name="client">
+        /// Client type to pass through when calling the service.
+        /// </param>
         /// <param name="stopId">
         /// ID of the bus stop to get real-time arrival information for.
         /// </param>
@@ -368,11 +383,11 @@ module Bus =
         /// Real-time arrival information for the bus stop with ID
         /// <param name="stopId" />.
         /// </returns>
-        let public getRealTimeBusInformation (stopid:int)
+        let public getRealTimeBusInformation (client:Client.T) (stopid:int)
             : Async<Result<T, ApiError>> =
                 [("stopid",stopid.ToString())]
                 |> buildUri defaultServiceEndpoint RealTimeBusInformation
-                |> getEndpointContent defaultHandler
+                |> getEndpointContent client
                 >>> deserializeServiceResponseModel<RealTimeBusInformationModel>
                 >>> validateServiceResponseModel
                 >>< List.mapFold make true
@@ -450,6 +465,9 @@ module Bus =
         /// Asynchronously gets information about a given route run by a given
         /// operator.
         /// </summary>
+        /// <param name="client">
+        /// Client type to pass through when calling the service.
+        /// </param>
         /// <param name="route">
         /// Route to get information for.
         /// </param>
@@ -461,11 +479,11 @@ module Bus =
         /// Information about <param name="route" /> run by given operator with
         /// reference code <param name="operatorReference" />.
         /// </returns>
-        let public getRouteInformation (route:string) (operatorReference:string)
+        let public getRouteInformation(client:Client.T) (route:string) (operatorReference:string)
             : Async<Result<T list, ApiError>> =
                 [("routeid",route);("operator",operatorReference)]
                 |> buildUri defaultServiceEndpoint RouteInformation
-                |> getEndpointContent defaultHandler
+                |> getEndpointContent client
                 >>> deserializeServiceResponseModel<RouteInformationModel>
                 >>> validateServiceResponseModel
                 >>< List.mapFold make true
@@ -490,9 +508,9 @@ module Bus =
                 if o = m.OperatorReference then (o,m.Route::rs)::os
                 else (m.OperatorReference, m.Route::[])::acc
 
-        let internal getRouteListModel args =
+        let internal getRouteListModel (client:Client.T) args =
             buildUri defaultServiceEndpoint RouteListInformation args
-            |> getEndpointContent defaultHandler
+            |> getEndpointContent client
             >>> deserializeServiceResponseModel<RouteListInformationModel>
             >>> validateServiceResponseModel
 
@@ -504,11 +522,14 @@ module Bus =
         /// Asynchronously gets information about all routes run by all
         /// operators.
         /// </summary>
+        /// <param name="client">
+        /// Client type to pass through when calling the service.
+        /// </param>
         /// <returns>
         /// Information about all routes run by all operators.
         /// </returns>
-        let public getRouteListInformation () : Async<Result<T list, ApiError>> =
-                getRouteListModel []
+        let public getRouteListInformation (client:Client.T) : Async<Result<T list, ApiError>> =
+                getRouteListModel client []
                 >>< groupByOperator
                 >>< List.map (fun (o,rs) -> {OperatorReferenceCode = o; Routes = rs})
 
@@ -516,6 +537,9 @@ module Bus =
         /// Asynchronously gets information about all routes run by a given
         /// operator.
         /// </summary>
+        /// <param name="client">
+        /// Client type to pass through when calling the service.
+        /// </param>
         /// <param name="operatorReferenceCode">
         /// Reference code of operator to get information for about all the
         /// routes it runs.
@@ -524,8 +548,9 @@ module Bus =
         /// Information about all routes run by operator with reference code
         /// <param name="operatorReferenceCode" />
         /// </returns>
-        let public getRouteListInformationForOperator operatorReferenceCode : Async<Result<T, ApiError>> =
-                getRouteListModel [("operator",operatorReferenceCode)]
+        let public getRouteListInformationForOperator (client:Client.T) operatorReferenceCode
+            : Async<Result<T, ApiError>> =
+                getRouteListModel client [("operator",operatorReferenceCode)]
                 >>< groupByOperator
                 >>> fun os ->
                         match os with

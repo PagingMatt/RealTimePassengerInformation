@@ -11,6 +11,7 @@ module Service =
     /// from the library to fail.
     /// </summary>
     type public ApiError =
+        | UserError
         | NoResults
         | InternalLibraryError
         | NetworkError
@@ -18,12 +19,16 @@ module Service =
         | ServiceError
 
     module Client =
-        let internal defaultHandler = new HttpClientHandler()
+        type public T = {
+            HttpHandler : HttpMessageHandler
+        }
 
-        let internal getEndpointContent handler (uri:string) =
+        let public defaultClient = {HttpHandler = new HttpClientHandler()}
+
+        let internal getEndpointContent (client:T) (uri:string) =
             async {
                 try
-                    use client = new HttpClient(handler, false)
+                    use client = new HttpClient(client.HttpHandler, false)
                     use! response = Async.AwaitTask<HttpResponseMessage>(client.GetAsync(uri))
                     if response.IsSuccessStatusCode then
                         let! content = Async.AwaitTask<string>(response.Content.ReadAsStringAsync())
@@ -31,7 +36,8 @@ module Service =
                     else
                         return Error InternalLibraryError
                 with
-                | :? HttpRequestException      -> return Error NetworkError
+                | :? ArgumentNullException -> return Error UserError
+                | :? HttpRequestException  -> return Error NetworkError
             }
 
     module Endpoints =

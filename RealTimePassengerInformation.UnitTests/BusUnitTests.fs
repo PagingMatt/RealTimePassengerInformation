@@ -1,8 +1,12 @@
 ﻿namespace RealTimePassengerInformation.UnitTests
 
 open System
+open System.Net
+open System.Net.Http
 open RealTimePassengerInformation.Service
+open RealTimePassengerInformation.Service.Client
 open RealTimePassengerInformation.Service.Models
+open RealTimePassengerInformation.UnitTests.Helpers
 open Xunit
 open Xunit.Sdk
 
@@ -162,6 +166,72 @@ module Bus =
             | Ok result -> Assert.Equal<BusStopOperator list>([{Name="e"; Routes=["f";"g"]}], result.Operators)
             | _         -> raise (XunitException("Make did not result in Ok <result>."))
 
+        [<Fact>]
+        let ``getBusStopInformation_ServiceErrorInResponseStatusCode_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, None, (Some HttpStatusCode.BadRequest))}
+            let result = getBusStopInformation client 1
+            Assert.Equal<Result<BusStopInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getBusStopInformation_UserErrorInClientSetup_ErrorUserError`` () =
+            let client = {HttpHandler = null}
+            let result = getBusStopInformation client 1
+            Assert.Equal<Result<BusStopInformation.T, ApiError>>(Error UserError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getBusStopInformation_NetworkErrorOnRequest_ErrorNetworkError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler((Some (upcast new HttpRequestException())), None, None)}
+            let result = getBusStopInformation client 1
+            Assert.Equal<Result<BusStopInformation.T, ApiError>>(Error NetworkError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getBusStopInformation_CannotDeserializeClientResponse_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent("{"))), None)}
+            let result = getBusStopInformation client 1
+            Assert.Equal<Result<BusStopInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Theory>]
+        [<InlineData(@"{'errorcode':'1','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'2','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'3','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'4','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'5','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'6','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        let ``getBusStopInformation_ResultIsServiceFailureResult_Error`` response =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let result = getBusStopInformation client 1
+            match Async.RunSynchronously result with
+            | Error _ -> ignore
+            | Ok _    -> raise (new XunitException("Error response code did not fail call."))
+
+        [<Fact>]
+        let ``getBusStopInformation_ResultIsNotSingleResult_ErrorInternalLibraryError`` () =
+            let responseResult = @"{'stopid':'0','displaystopid':'0','shortname':'','shortnamelocalized':'','fullname':'','fullnamelocalized':'','latitude':'0.1','longitude':'0.2','lastupdated':'','operators':[]}"
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'2','timestamp':'','results':[" + responseResult + "," + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let result = getBusStopInformation client 1
+            Assert.Equal<Result<BusStopInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getBusStopInformation_ResponseValid_OkResponse`` () =
+            let responseResult = @"{'stopid':'1','displaystopid':'2','shortname':'a','shortnamelocalized':'b','fullname':'c','fullnamelocalized':'d','latitude':'0.1','longitude':'0.2','lastupdated':'06/10/2018 16:15:00','operators':[{'name':'e','routes':['f']}]}"
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getBusStopInformation client 1 |> Async.RunSynchronously
+            match unwrappedResult with
+            | Error _   -> raise (new XunitException("Valid response should have 'Ok ...' result."))
+            | Ok result ->
+                Assert.Equal(1, result.StopId)
+                Assert.Equal(2, result.DisplayedStopId)
+                Assert.Equal("a", result.ShortName.EnglishName)
+                Assert.Equal("b", result.ShortName.IrishName)
+                Assert.Equal("c", result.FullName.EnglishName)
+                Assert.Equal("d", result.FullName.IrishName)
+                Assert.Equal(0.1, result.Latitude)
+                Assert.Equal(0.2, result.Longitude)
+                Assert.Equal(new DateTime(2018, 10, 6, 16, 15, 0), result.LastUpdated)
+                Assert.Equal<BusStopOperator list>([{Name="e"; Routes=["f"]}], result.Operators)
+
     module FullTimeTableInformation =
         open RealTimePassengerInformation.Bus.FullTimeTableInformation
 
@@ -195,6 +265,77 @@ module Bus =
             let model = new FullTimetableBusInformationModel("Monday", "Tuesday", "a", "b", "04/10/2018 23:27:00", ["c"])
             Assert.Equal<TimeSpan list>([], (makeSafe model).Departures)
 
+        [<Fact>]
+        let ``getFullTimetableInformation_ServiceErrorInResponseStatusCode_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, None, (Some HttpStatusCode.BadRequest))}
+            let result = getFullTimetableInformation client 1 "1"
+            Assert.Equal<Result<FullTimeTableInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getFullTimetableInformation_UserErrorInClientSetup_ErrorUserError`` () =
+            let client = {HttpHandler = null}
+            let result = getFullTimetableInformation client 1 "1"
+            Assert.Equal<Result<FullTimeTableInformation.T, ApiError>>(Error UserError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getFullTimetableInformation_NetworkErrorOnRequest_ErrorNetworkError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler((Some (upcast new HttpRequestException())), None, None)}
+            let result = getFullTimetableInformation client 1 "1"
+            Assert.Equal<Result<FullTimeTableInformation.T, ApiError>>(Error NetworkError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getFullTimetableInformation_CannotDeserializeClientResponse_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent("{"))), None)}
+            let result = getFullTimetableInformation client 1 "1"
+            Assert.Equal<Result<FullTimeTableInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Theory>]
+        [<InlineData(@"{'errorcode':'1','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'2','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'3','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'4','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'5','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'6','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        let ``getFullTimetableInformation_ResultIsServiceFailureResult_Error`` response =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let result = getFullTimetableInformation client 1 "1"
+            match Async.RunSynchronously result with
+            | Error _ -> ignore
+            | Ok _    -> raise (new XunitException("Error response code did not fail call."))
+
+        [<Theory>]
+        [<InlineData(@"{'startdayofweek':'','enddayofweek':'Tuesday','destination':'a','destinationlocalized':'b','lastupdated':'06/10/2018 16:15:00','departures':['01:01:01','02:02:02']}")>]
+        [<InlineData(@"{'startdayofweek':'Monday','enddayofweek':'','destination':'a','destinationlocalized':'b','lastupdated':'06/10/2018 16:15:00','departures':['01:01:01','02:02:02']}")>]
+        [<InlineData(@"{'startdayofweek':'Monday','enddayofweek':'Tuesday','destination':'a','destinationlocalized':'b','lastupdated':'06/10/2018T16:15:00','departures':['01:01:01','02:02:02']}")>]
+        [<InlineData(@"{'startdayofweek':'Monday','enddayofweek':'Tuesday','destination':'a','destinationlocalized':'b','lastupdated':'06/10/2018 16:15:00','departures':['01:01:01Z','02:02:02']}")>]
+        let ``getFullTimetableInformation_CannotDeserializeInMake_ErrorInternalLibraryError`` responseResult =
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getFullTimetableInformation client 1 "1" |> Async.RunSynchronously
+            Assert.Equal(Error InternalLibraryError, unwrappedResult)
+
+        [<Fact>]
+        let ``getFullTimetableInformation_ResponseValid_OkResponse`` () =
+            let responseResult = @"{'startdayofweek':'Monday','enddayofweek':'Tuesday','destination':'a','destinationlocalized':'b','lastupdated':'06/10/2018 16:15:00','departures':['01:01:01','02:02:02']}"
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getFullTimetableInformation client 1 "1" |> Async.RunSynchronously
+            match unwrappedResult with
+            | Error _   -> raise (new XunitException("Valid response should have 'Ok ...' result."))
+            | Ok result ->
+                Assert.Equal(1, result.StopId)
+                Assert.Equal("1", result.Route)
+                Assert.Equal<TimeTableEntry list>(
+                    [
+                        {
+                            StartDayOfWeek=Monday;
+                            EndDayOfWeek=Tuesday;
+                            Destination={EnglishName="a";IrishName="b"};
+                            LastUpdated=new DateTime(2018, 10, 6, 16, 15, 0);
+                            Departures=[new TimeSpan(1,1,1);new TimeSpan(2,2,2)]
+                        }
+                    ], result.TimeTableEntries)
+
     module OperatorInformation =
         open RealTimePassengerInformation.Bus.OperatorInformation
 
@@ -212,6 +353,62 @@ module Bus =
         let ``make_ValidModel_DescriptionSetToDescriptionInModel`` () =
             let model = new OperatorInformationModel("a", "b", "c")
             Assert.Equal("c", (make model).Description)
+
+        [<Fact>]
+        let ``getOperatorInformation_ServiceErrorInResponseStatusCode_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, None, (Some HttpStatusCode.BadRequest))}
+            let result = getOperatorInformation client
+            Assert.Equal<Result<OperatorInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getOperatorInformation_UserErrorInClientSetup_ErrorUserError`` () =
+            let client = {HttpHandler = null}
+            let result = getOperatorInformation client
+            Assert.Equal<Result<OperatorInformation.T, ApiError>>(Error UserError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getOperatorInformation_NetworkErrorOnRequest_ErrorNetworkError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler((Some (upcast new HttpRequestException())), None, None)}
+            let result = getOperatorInformation client
+            Assert.Equal<Result<OperatorInformation.T, ApiError>>(Error NetworkError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getOperatorInformation_CannotDeserializeClientResponse_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent("{"))), None)}
+            let result = getOperatorInformation client
+            Assert.Equal<Result<OperatorInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Theory>]
+        [<InlineData(@"{'errorcode':'1','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'2','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'3','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'4','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'5','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'6','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        let ``getOperatorInformation_ResultIsServiceFailureResult_Error`` response =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let result = getOperatorInformation client
+            match Async.RunSynchronously result with
+            | Error _ -> ignore
+            | Ok _    -> raise (new XunitException("Error response code did not fail call."))
+
+        [<Fact>]
+        let ``getOperatorInformation_ResponseValid_OkResponse`` () =
+            let responseResult = @"{'operatorreference':'a','operatorname':'b','operatordescription':'c'}"
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getOperatorInformation client |> Async.RunSynchronously
+            match unwrappedResult with
+            | Error _   -> raise (new XunitException("Valid response should have 'Ok ...' result."))
+            | Ok result ->
+                Assert.Equal<T>(
+                    [
+                        {
+                            ReferenceCode="a";
+                            Name="b";
+                            Description="c";
+                        }
+                    ], result)
 
     module RealTimeBusInformation =
         open RealTimePassengerInformation.Bus.RealTimeBusInformation
@@ -341,6 +538,95 @@ module Bus =
         let ``deserializeLowFloorStatus_Unrecognised_None`` lowFloorStatus =
             Assert.Equal(None, deserializeLowFloorStatus lowFloorStatus)
 
+        [<Fact>]
+        let ``getRealTimeBusInformation_ServiceErrorInResponseStatusCode_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, None, (Some HttpStatusCode.BadRequest))}
+            let result = getRealTimeBusInformation client 1
+            Assert.Equal<Result<RealTimeBusInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRealTimeBusInformation_UserErrorInClientSetup_ErrorUserError`` () =
+            let client = {HttpHandler = null}
+            let result = getRealTimeBusInformation client 1
+            Assert.Equal<Result<RealTimeBusInformation.T, ApiError>>(Error UserError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRealTimeBusInformation_NetworkErrorOnRequest_ErrorNetworkError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler((Some (upcast new HttpRequestException())), None, None)}
+            let result = getRealTimeBusInformation client 1
+            Assert.Equal<Result<RealTimeBusInformation.T, ApiError>>(Error NetworkError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRealTimeBusInformation_CannotDeserializeClientResponse_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent("{"))), None)}
+            let result = getRealTimeBusInformation client 1
+            Assert.Equal<Result<RealTimeBusInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Theory>]
+        [<InlineData(@"{'errorcode':'1','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'2','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'3','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'4','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'5','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'6','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        let ``getRealTimeBusInformation_ResultIsServiceFailureResult_Error`` response =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let result = getRealTimeBusInformation client 1
+            match Async.RunSynchronously result with
+            | Error _ -> ignore
+            | Ok _    -> raise (new XunitException("Error response code did not fail call."))
+
+        [<Theory>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018T16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'x','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018T16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'x','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018T16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018T16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'x','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018T16:15:00','stops':[]}")>]
+        let ``getRealTimeBusInformation_CannotDeserializeInMake_ErrorInternalLibraryError`` responseResult =
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getRealTimeBusInformation client 1 |> Async.RunSynchronously
+            Assert.Equal(Error InternalLibraryError, unwrappedResult)
+
+        [<Theory>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00'}")>]
+        let ``getFullTimetableInformation_ResponseValid_OkResponse`` responseResult =
+            let response = @"{'errorcode':'0','errormessage':'','stopid':'1','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getRealTimeBusInformation client 1 |> Async.RunSynchronously
+            match unwrappedResult with
+            | Error e   -> raise (new XunitException("Valid response should have 'Ok ...' result."))
+            | Ok result ->
+                Assert.Equal<T>(
+                    {
+                        StopId=1;
+                        Arrivals=[
+                            {
+                                Arrival={
+                                    Expected=new DateTime(2018,10,6,16,15,0);
+                                    Scheduled=new DateTime(2018,10,6,16,15,0);
+                                    BoardStatus=(ExpectedInMinutes 1)
+                                };
+                                Departure={
+                                    Expected=new DateTime(2018,10,6,16,15,0);
+                                    Scheduled=new DateTime(2018,10,6,16,15,0);
+                                    BoardStatus=(ExpectedInMinutes 2)
+                                };
+                                Origin={EnglishName="c";IrishName="d"};
+                                Destination={EnglishName="a";IrishName="b"};
+                                Direction="Inbound";
+                                OperatorReferenceCode="e";
+                                AdditionalInformation="f";
+                                HasLowFloor=true;
+                                Route="3";
+                                SourceTimeStamp=new DateTime(2018,10,6,16,15,0)
+                            }
+                        ]
+                    }, result)
+
     module RouteInformation =
         open RealTimePassengerInformation.Bus.RouteInformation
 
@@ -384,5 +670,200 @@ module Bus =
             let model = new RouteStop(1, 2, "a", "b", "c", "d", 0.1, 0.2)
             Assert.Equal(0.2, (makeBusStopInformation model).Longitude)
 
+        [<Fact>]
+        let ``getRouteInformation_ServiceErrorInResponseStatusCode_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, None, (Some HttpStatusCode.BadRequest))}
+            let result = getRouteInformation client "1" "a"
+            Assert.Equal<Result<RouteInformation.T list, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRouteInformation_UserErrorInClientSetup_ErrorUserError`` () =
+            let client = {HttpHandler = null}
+            let result = getRouteInformation client "1" "a"
+            Assert.Equal<Result<RouteInformation.T list, ApiError>>(Error UserError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRouteInformation_NetworkErrorOnRequest_ErrorNetworkError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler((Some (upcast new HttpRequestException())), None, None)}
+            let result = getRouteInformation client "1" "a"
+            Assert.Equal<Result<RouteInformation.T list, ApiError>>(Error NetworkError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRouteInformation_CannotDeserializeClientResponse_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent("{"))), None)}
+            let result = getRouteInformation client "1" "a"
+            Assert.Equal<Result<RouteInformation.T list, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Theory>]
+        [<InlineData(@"{'errorcode':'1','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'2','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'3','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'4','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'5','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'6','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        let ``getRouteInformation_ResultIsServiceFailureResult_Error`` response =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let result = getRouteInformation client "1" "a"
+            match Async.RunSynchronously result with
+            | Error _ -> ignore
+            | Ok _    -> raise (new XunitException("Error response code did not fail call."))
+
+        [<Theory>]
+        [<InlineData(@"{'operator':'a','origin':'b','originlocalized':'c','destination':'d','destinationlocalized':'e','lastupdated':'06/10/2018T16:15:00','stops':[]}")>]
+        let ``getRouteInformation_CannotDeserializeInMake_ErrorInternalLibraryError`` responseResult =
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getRouteInformation client "1" "a" |> Async.RunSynchronously
+            Assert.Equal(Error InternalLibraryError, unwrappedResult)
+
+        [<Fact>]
+        let ``getFullTimetableInformation_ResponseValid_OkResponse`` () =
+            let responseResult = @"{'operator':'a','origin':'b','originlocalized':'c','destination':'d','destinationlocalized':'e','lastupdated':'06/10/2018 16:15:00','stops':[{stopid:'2','displaystopid':'3','shortname':'f','shortnamelocalized':'g','fullname':'h','fullnamelocalized':'i','latitude':'0.1','longitude':'0.2'}]}"
+            let response = @"{'errorcode':'0','errormessage':'','route':'1','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getRouteInformation client "1" "a" |> Async.RunSynchronously
+            match unwrappedResult with
+            | Error e   -> raise (new XunitException("Valid response should have 'Ok ...' result."))
+            | Ok result ->
+                Assert.Equal<T list>(
+                    [
+                        {
+                            OperatorName="a";
+                            Origin={EnglishName="b";IrishName="c"};
+                            Destination={EnglishName="d";IrishName="e"};
+                            LastUpdated=new DateTime(2018,10,6,16,15,0);
+                            Stops=[
+                                {
+                                    StopId=2;
+                                    DisplayedStopId=3;
+                                    ShortName={EnglishName="f";IrishName="g"};
+                                    FullName={EnglishName="h";IrishName="i"};
+                                    Latitude=0.1;
+                                    Longitude=0.2;
+                                }
+                            ];
+                        }
+                    ], result)
+
     module RouteListInformation =
         open RealTimePassengerInformation.Bus.RouteListInformation
+
+        [<Fact>]
+        let ``getRouteListInformation_ServiceErrorInResponseStatusCode_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, None, (Some HttpStatusCode.BadRequest))}
+            let result = getRouteListInformation client
+            Assert.Equal<Result<RouteListInformation.T list, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRouteListInformation_UserErrorInClientSetup_ErrorUserError`` () =
+            let client = {HttpHandler = null}
+            let result = getRouteListInformation client
+            Assert.Equal<Result<RouteListInformation.T list, ApiError>>(Error UserError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRouteListInformation_NetworkErrorOnRequest_ErrorNetworkError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler((Some (upcast new HttpRequestException())), None, None)}
+            let result = getRouteListInformation client
+            Assert.Equal<Result<RouteListInformation.T list, ApiError>>(Error NetworkError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRouteListInformation_CannotDeserializeClientResponse_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent("{"))), None)}
+            let result = getRouteListInformation client
+            Assert.Equal<Result<RouteListInformation.T list, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Theory>]
+        [<InlineData(@"{'errorcode':'1','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'2','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'3','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'4','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'5','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'6','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        let ``getRouteListInformation_ResultIsServiceFailureResult_Error`` response =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let result = getRouteListInformation client
+            match Async.RunSynchronously result with
+            | Error _ -> ignore
+            | Ok _    -> raise (new XunitException("Error response code did not fail call."))
+
+        [<Fact>]
+        let ``getRouteListInformation_ResponseValid_OkResponse`` () =
+            let responseResult = @"{'operator':'a','route':'b'},{'operator':'a','route':'c'},{'operator':'d','route':'e'}"
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getRouteListInformation client |> Async.RunSynchronously
+            match unwrappedResult with
+            | Error _   -> raise (new XunitException("Valid response should have 'Ok ...' result."))
+            | Ok result ->
+                Assert.Equal<T list>(
+                    [
+                        {
+                            OperatorReferenceCode="d";
+                            Routes=["e"]
+                        };
+                        {
+                            OperatorReferenceCode="a";
+                            Routes=["c";"b"]
+                        }
+                    ], result)
+
+        [<Fact>]
+        let ``getRouteListInformationForOperator_ServiceErrorInResponseStatusCode_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, None, (Some HttpStatusCode.BadRequest))}
+            let result = getRouteListInformationForOperator client "a"
+            Assert.Equal<Result<RouteListInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRouteListInformationForOperator_UserErrorInClientSetup_ErrorUserError`` () =
+            let client = {HttpHandler = null}
+            let result = getRouteListInformationForOperator client "a"
+            Assert.Equal<Result<RouteListInformation.T, ApiError>>(Error UserError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRouteListInformationForOperator_NetworkErrorOnRequest_ErrorNetworkError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler((Some (upcast new HttpRequestException())), None, None)}
+            let result = getRouteListInformationForOperator client "a"
+            Assert.Equal<Result<RouteListInformation.T, ApiError>>(Error NetworkError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRouteListInformationForOperator_CannotDeserializeClientResponse_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent("{"))), None)}
+            let result = getRouteListInformationForOperator client "a"
+            Assert.Equal<Result<RouteListInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Theory>]
+        [<InlineData(@"{'errorcode':'1','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'2','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'3','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'4','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'5','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'6','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        let ``getRouteListInformationForOperator_ResultIsServiceFailureResult_Error`` response =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let result = getRouteListInformationForOperator client "a"
+            match Async.RunSynchronously result with
+            | Error _ -> ignore
+            | Ok _    -> raise (new XunitException("Error response code did not fail call."))
+
+        [<Fact>]
+        let ``getRouteListInformationForOperator_MultipleOperatorsReturned_ErrorInternalLibraryError`` () =
+            let responseResult = @"{'operator':'a','route':'b'},{'operator':'a','route':'c'},{'operator':'d','route':'e'}"
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getRouteListInformationForOperator client "a" |> Async.RunSynchronously
+            Assert.Equal(Error InternalLibraryError, unwrappedResult)
+
+        [<Fact>]
+        let ``getRouteListInformationForOperator_ResponseValid_OkResponse`` () =
+            let responseResult = @"{'operator':'a','route':'b'},{'operator':'a','route':'c'}"
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getRouteListInformationForOperator client "a" |> Async.RunSynchronously
+            match unwrappedResult with
+            | Error _   -> raise (new XunitException("Valid response should have 'Ok ...' result."))
+            | Ok result ->
+                Assert.Equal<T>(
+                    {
+                            OperatorReferenceCode="a";
+                            Routes=["c";"b"]
+                    } , result)
