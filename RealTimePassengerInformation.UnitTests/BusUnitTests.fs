@@ -658,3 +658,123 @@ module Bus =
 
     module RouteListInformation =
         open RealTimePassengerInformation.Bus.RouteListInformation
+
+        [<Fact>]
+        let ``getRouteListInformation_ServiceErrorInResponseStatusCode_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, None, (Some HttpStatusCode.BadRequest))}
+            let result = getRouteListInformation client
+            Assert.Equal<Result<RouteListInformation.T list, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRouteListInformation_UserErrorInClientSetup_ErrorUserError`` () =
+            let client = {HttpHandler = null}
+            let result = getRouteListInformation client
+            Assert.Equal<Result<RouteListInformation.T list, ApiError>>(Error UserError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRouteListInformation_NetworkErrorOnRequest_ErrorNetworkError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler((Some (upcast new HttpRequestException())), None, None)}
+            let result = getRouteListInformation client
+            Assert.Equal<Result<RouteListInformation.T list, ApiError>>(Error NetworkError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRouteListInformation_CannotDeserializeClientResponse_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent("{"))), None)}
+            let result = getRouteListInformation client
+            Assert.Equal<Result<RouteListInformation.T list, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Theory>]
+        [<InlineData(@"{'errorcode':'1','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'2','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'3','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'4','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'5','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'6','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        let ``getRouteListInformation_ResultIsServiceFailureResult_Error`` response =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let result = getRouteListInformation client
+            match Async.RunSynchronously result with
+            | Error _ -> ignore
+            | Ok _    -> raise (new XunitException("Error response code did not fail call."))
+
+        [<Fact>]
+        let ``getRouteListInformation_ResponseValid_OkResponse`` () =
+            let responseResult = @"{'operator':'a','route':'b'},{'operator':'a','route':'c'},{'operator':'d','route':'e'}"
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getRouteListInformation client |> Async.RunSynchronously
+            match unwrappedResult with
+            | Error _   -> raise (new XunitException("Valid response should have 'Ok ...' result."))
+            | Ok result ->
+                Assert.Equal<T list>(
+                    [
+                        {
+                            OperatorReferenceCode="d";
+                            Routes=["e"]
+                        };
+                        {
+                            OperatorReferenceCode="a";
+                            Routes=["c";"b"]
+                        }
+                    ], result)
+
+        [<Fact>]
+        let ``getRouteListInformationForOperator_ServiceErrorInResponseStatusCode_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, None, (Some HttpStatusCode.BadRequest))}
+            let result = getRouteListInformationForOperator client "a"
+            Assert.Equal<Result<RouteListInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRouteListInformationForOperator_UserErrorInClientSetup_ErrorUserError`` () =
+            let client = {HttpHandler = null}
+            let result = getRouteListInformationForOperator client "a"
+            Assert.Equal<Result<RouteListInformation.T, ApiError>>(Error UserError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRouteListInformationForOperator_NetworkErrorOnRequest_ErrorNetworkError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler((Some (upcast new HttpRequestException())), None, None)}
+            let result = getRouteListInformationForOperator client "a"
+            Assert.Equal<Result<RouteListInformation.T, ApiError>>(Error NetworkError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRouteListInformationForOperator_CannotDeserializeClientResponse_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent("{"))), None)}
+            let result = getRouteListInformationForOperator client "a"
+            Assert.Equal<Result<RouteListInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Theory>]
+        [<InlineData(@"{'errorcode':'1','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'2','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'3','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'4','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'5','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'6','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        let ``getRouteListInformationForOperator_ResultIsServiceFailureResult_Error`` response =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let result = getRouteListInformationForOperator client "a"
+            match Async.RunSynchronously result with
+            | Error _ -> ignore
+            | Ok _    -> raise (new XunitException("Error response code did not fail call."))
+
+        [<Fact>]
+        let ``getRouteListInformationForOperator_MultipleOperatorsReturned_ErrorInternalLibraryError`` () =
+            let responseResult = @"{'operator':'a','route':'b'},{'operator':'a','route':'c'},{'operator':'d','route':'e'}"
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getRouteListInformationForOperator client "a" |> Async.RunSynchronously
+            Assert.Equal(Error InternalLibraryError, unwrappedResult)
+
+        [<Fact>]
+        let ``getRouteListInformationForOperator_ResponseValid_OkResponse`` () =
+            let responseResult = @"{'operator':'a','route':'b'},{'operator':'a','route':'c'}"
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getRouteListInformationForOperator client "a" |> Async.RunSynchronously
+            match unwrappedResult with
+            | Error _   -> raise (new XunitException("Valid response should have 'Ok ...' result."))
+            | Ok result ->
+                Assert.Equal<T>(
+                    {
+                            OperatorReferenceCode="a";
+                            Routes=["c";"b"]
+                    } , result)
