@@ -538,6 +538,95 @@ module Bus =
         let ``deserializeLowFloorStatus_Unrecognised_None`` lowFloorStatus =
             Assert.Equal(None, deserializeLowFloorStatus lowFloorStatus)
 
+        [<Fact>]
+        let ``getRealTimeBusInformation_ServiceErrorInResponseStatusCode_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, None, (Some HttpStatusCode.BadRequest))}
+            let result = getRealTimeBusInformation client 1
+            Assert.Equal<Result<RealTimeBusInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRealTimeBusInformation_UserErrorInClientSetup_ErrorUserError`` () =
+            let client = {HttpHandler = null}
+            let result = getRealTimeBusInformation client 1
+            Assert.Equal<Result<RealTimeBusInformation.T, ApiError>>(Error UserError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRealTimeBusInformation_NetworkErrorOnRequest_ErrorNetworkError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler((Some (upcast new HttpRequestException())), None, None)}
+            let result = getRealTimeBusInformation client 1
+            Assert.Equal<Result<RealTimeBusInformation.T, ApiError>>(Error NetworkError, Async.RunSynchronously result)
+
+        [<Fact>]
+        let ``getRealTimeBusInformation_CannotDeserializeClientResponse_ErrorInternalLibraryError`` () =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent("{"))), None)}
+            let result = getRealTimeBusInformation client 1
+            Assert.Equal<Result<RealTimeBusInformation.T, ApiError>>(Error InternalLibraryError, Async.RunSynchronously result)
+
+        [<Theory>]
+        [<InlineData(@"{'errorcode':'1','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'2','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'3','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'4','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'5','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        [<InlineData(@"{'errorcode':'6','errormessage':'','numberofresults':'0','timestamp':'','results':[]}")>]
+        let ``getRealTimeBusInformation_ResultIsServiceFailureResult_Error`` response =
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let result = getRealTimeBusInformation client 1
+            match Async.RunSynchronously result with
+            | Error _ -> ignore
+            | Ok _    -> raise (new XunitException("Error response code did not fail call."))
+
+        [<Theory>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018T16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'x','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018T16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'x','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018T16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018T16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'x','route':'3','sourcetimestamp':'06/10/2018 16:15:00','stops':[]}")>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018T16:15:00','stops':[]}")>]
+        let ``getRealTimeBusInformation_CannotDeserializeInMake_ErrorInternalLibraryError`` responseResult =
+            let response = @"{'errorcode':'0','errormessage':'','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getRealTimeBusInformation client 1 |> Async.RunSynchronously
+            Assert.Equal(Error InternalLibraryError, unwrappedResult)
+
+        [<Theory>]
+        [<InlineData(@"{'arrivaldatetime':'06/10/2018 16:15:00','duetime':'1','departuredatetime':'06/10/2018 16:15:00','departureduetime':'2','scheduledarrivaldatetime':'06/10/2018 16:15:00','scheduleddeparturedatetime':'06/10/2018 16:15:00','destination':'a','destinationlocalized':'b','origin':'c','originlocalized':'d','direction':'Inbound','operator':'e','additionalinformation':'f','lowfloorstatus':'yes','route':'3','sourcetimestamp':'06/10/2018 16:15:00'}")>]
+        let ``getFullTimetableInformation_ResponseValid_OkResponse`` responseResult =
+            let response = @"{'errorcode':'0','errormessage':'','stopid':'1','numberofresults':'1','timestamp':'06/10/2018 16:15:00','results':[" + responseResult + "]}"
+            let client = {HttpHandler = new TestHttpMessageHandler(None, (Some (upcast new StringContent(response))), None)}
+            let unwrappedResult = getRealTimeBusInformation client 1 |> Async.RunSynchronously
+            match unwrappedResult with
+            | Error e   -> raise (new XunitException("Valid response should have 'Ok ...' result."))
+            | Ok result ->
+                Assert.Equal<T>(
+                    {
+                        StopId=1;
+                        Arrivals=[
+                            {
+                                Arrival={
+                                    Expected=new DateTime(2018,10,6,16,15,0);
+                                    Scheduled=new DateTime(2018,10,6,16,15,0);
+                                    BoardStatus=(ExpectedInMinutes 1)
+                                };
+                                Departure={
+                                    Expected=new DateTime(2018,10,6,16,15,0);
+                                    Scheduled=new DateTime(2018,10,6,16,15,0);
+                                    BoardStatus=(ExpectedInMinutes 2)
+                                };
+                                Origin={EnglishName="c";IrishName="d"};
+                                Destination={EnglishName="a";IrishName="b"};
+                                Direction="Inbound";
+                                OperatorReferenceCode="e";
+                                AdditionalInformation="f";
+                                HasLowFloor=true;
+                                Route="3";
+                                SourceTimeStamp=new DateTime(2018,10,6,16,15,0)
+                            }
+                        ]
+                    }, result)
+
     module RouteInformation =
         open RealTimePassengerInformation.Bus.RouteInformation
 
