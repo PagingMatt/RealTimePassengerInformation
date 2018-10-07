@@ -79,13 +79,15 @@ let (info:Async<Result<RouteInformation.T list, ApiError>>) =
 
 This may be refactored in the future as a `list` result may not be required.
 
-### Get a list of all routes under an operator
+I will also look into removing the need for the operator parameter, either from the calls to the RTPI service or via some additional logic that will insert it for the caller.
+
+### Get a list of all routes (associated with their operators)
 
 The `RouteListInformation` module provides functions to do this.
 
 #### Not filtering by operator
 
-To get a summary of all routes run by all operators use the `getRouteListInformation` function.
+To get a summary of all routes run regardless of operator use the `getRouteListInformation` function.
 
 ```
 open RealTimePassengerInformation.Bus
@@ -107,7 +109,7 @@ let (info:Async<Result<RouteListInformation.T, ApiError>>) =
     RouteListInformation.getRouteListInformationForOperator defaultClient {operator reference code}
 ```
 
-If you just need information for one operator let this function do the filtering for you, as it is actually the RTPI service that does the filtering - lowering the amount of data transfered over the network.
+If you just need information for one operator let this function do the filtering for you, as it is actually the RTPI service that does the filtering which lowers the amount of data transfered over the network.
 
 ## Acknowledgements
 
