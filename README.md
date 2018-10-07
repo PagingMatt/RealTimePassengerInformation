@@ -9,6 +9,106 @@ An F# implementation of an unofficial client library for the RTPI service provid
 [![codecov](https://codecov.io/gh/m-harrison/RealTimePassengerInformation/branch/master/graph/badge.svg)](https://codecov.io/gh/m-harrison/RealTimePassengerInformation)
 <sup>Ubuntu 14.04 & Mac OS X </sup>[![Build Status](https://travis-ci.org/m-harrison/RealTimePassengerInformation.svg?branch=master)](https://travis-ci.org/m-harrison/RealTimePassengerInformation)
 
+## How to use
+
+### Common stuff
+
+The middle tier logic for handling the HTTP calls to the service is handled by the `RealTimePassengerInformation.Service.Client` module. A `Client.T` must be passed into any of the library's public functions. The module provides the `defaultClient` value that should normally be used.
+
+### Get information about a bus stop
+
+To get information about a single bus stop by its ID use the `getBusStopInformation` function.
+
+```
+open RealTimePassengerInformation.Bus
+open RealTimePassengerInformation.Bus.Service.Client
+...
+let info:Async<Result<BusStopInformation.T, ApiError>> =
+    BusStopInformation.getBusStopInformation defaultClient {bus stop ID}
+```
+
+Searching bus stops by operator and name are coming soon.
+
+### Get the timetable for a route at a given bus stop
+
+To get information about a given route at a given bus stop use the `getFullTimetableInformation` function.
+
+```
+open RealTimePassengerInformation.Bus
+open RealTimePassengerInformation.Bus.Service.Client
+...
+let (info:Async<Result<FullTimeTableInformation.T, ApiError>>) =
+    FullTimeTableInformation.getFullTimetableInformation defaultClient {bus stop ID} {bus stop route}
+```
+
+### Get all the operators known to RTPI
+
+To get a list of all operators known to RTPI use the `getOperatorInformation` function.
+
+```
+open RealTimePassengerInformation.Bus
+open RealTimePassengerInformation.Bus.Service.Client
+...
+let (info:Async<Result<OperatorInformation.T, ApiError>>) =
+    OperatorInformation.getOperatorInformation defaultClient
+```
+
+### Get a list of real-time arrivals for a given bus stop
+
+To get a list of the real-time arrivals expected at any bus stop use the `getRealTimeBusInformation` function.
+
+```
+open RealTimePassengerInformation.Bus
+open RealTimePassengerInformation.Bus.Service.Client
+...
+let (info:Async<Result<RealTimeBusInformation.T, ApiError>>) =
+    RealTimeBusInformation.getRealTimeBusInformation defaultClient {bus stop ID}
+```
+
+### Get information about a given route (run by a given operator)
+
+To get information about a route run by a given operator use the `getRouteInformation` function.
+
+```
+open RealTimePassengerInformation.Bus
+open RealTimePassengerInformation.Bus.Service.Client
+...
+let (info:Async<Result<RouteInformation.T list, ApiError>>) =
+    RealTimeBusInformation.getRouteInformation defaultClient {route} {operator reference code}
+```
+
+This may be refactored in the future as a `list` result may not be required.
+
+### Get a list of all routes under an operator
+
+The `RouteListInformation` module provides functions to do this.
+
+#### Not filtering by operator
+
+To get a summary of all routes run by all operators use the `getRouteListInformation` function.
+
+```
+open RealTimePassengerInformation.Bus
+open RealTimePassengerInformation.Bus.Service.Client
+...
+let (info:Async<Result<RouteListInformation.T list, ApiError>>) =
+    RouteListInformation.getRouteListInformation defaultClient
+```
+
+#### Filtering for a given operator
+
+To get routes run by just one operator use the `getRouteListInformationForOperator` function.
+
+```
+open RealTimePassengerInformation.Bus
+open RealTimePassengerInformation.Bus.Service.Client
+...
+let (info:Async<Result<RouteListInformation.T, ApiError>>) =
+    RouteListInformation.getRouteListInformationForOperator defaultClient {operator reference code}
+```
+
+If you just need information for one operator let this function do the filtering for you, as it is actually the RTPI service that does the filtering - lowering the amount of data transfered over the network.
+
 ## Acknowledgements
 
 ### .gitignore
