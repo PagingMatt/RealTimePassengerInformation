@@ -19,7 +19,7 @@ The middle tier logic for handling the HTTP calls to the service is handled by t
 
 To get information about a single bus stop by its ID use the `getBusStopInformation` function.
 
-```
+```fsharp
 open RealTimePassengerInformation.Bus
 open RealTimePassengerInformation.Bus.Service.Client
 ...
@@ -33,7 +33,7 @@ Searching bus stops by operator and name are coming soon.
 
 To get information about a given route at a given bus stop use the `getFullTimetableInformation` function.
 
-```
+```fsharp
 open RealTimePassengerInformation.Bus
 open RealTimePassengerInformation.Bus.Service.Client
 ...
@@ -45,7 +45,7 @@ let (info:Async<Result<FullTimeTableInformation.T, ApiError>>) =
 
 To get a list of all operators known to RTPI use the `getOperatorInformation` function.
 
-```
+```fsharp
 open RealTimePassengerInformation.Bus
 open RealTimePassengerInformation.Bus.Service.Client
 ...
@@ -57,7 +57,7 @@ let (info:Async<Result<OperatorInformation.T, ApiError>>) =
 
 To get a list of the real-time arrivals expected at any bus stop use the `getRealTimeBusInformation` function.
 
-```
+```fsharp
 open RealTimePassengerInformation.Bus
 open RealTimePassengerInformation.Bus.Service.Client
 ...
@@ -69,7 +69,7 @@ let (info:Async<Result<RealTimeBusInformation.T, ApiError>>) =
 
 To get information about a route run by a given operator use the `getRouteInformation` function.
 
-```
+```fsharp
 open RealTimePassengerInformation.Bus
 open RealTimePassengerInformation.Bus.Service.Client
 ...
@@ -89,7 +89,7 @@ The `RouteListInformation` module provides functions to do this.
 
 To get a summary of all routes run regardless of operator use the `getRouteListInformation` function.
 
-```
+```fsharp
 open RealTimePassengerInformation.Bus
 open RealTimePassengerInformation.Bus.Service.Client
 ...
@@ -101,7 +101,7 @@ let (info:Async<Result<RouteListInformation.T list, ApiError>>) =
 
 To get routes run by just one operator use the `getRouteListInformationForOperator` function.
 
-```
+```fsharp
 open RealTimePassengerInformation.Bus
 open RealTimePassengerInformation.Bus.Service.Client
 ...
