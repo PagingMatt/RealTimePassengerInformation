@@ -21,10 +21,9 @@ To get information about a single bus stop by its ID use the `getBusStopInformat
 
 ```fsharp
 open RealTimePassengerInformation.Bus
-open RealTimePassengerInformation.Bus.Service.Client
 ...
 let info:Async<Result<BusStopInformation.T, ApiError>> =
-    BusStopInformation.getBusStopInformation defaultClient {bus stop ID}
+    BusStopInformation.getBusStopInformation Service.Client.defaultClient {bus stop ID}
 ```
 
 Searching bus stops by operator and name are coming soon.
@@ -35,10 +34,9 @@ To get information about a given route at a given bus stop use the `getFullTimet
 
 ```fsharp
 open RealTimePassengerInformation.Bus
-open RealTimePassengerInformation.Bus.Service.Client
 ...
 let (info:Async<Result<FullTimeTableInformation.T, ApiError>>) =
-    FullTimeTableInformation.getFullTimetableInformation defaultClient {bus stop ID} {bus stop route}
+    FullTimeTableInformation.getFullTimetableInformation Service.Client.defaultClient {bus stop ID} {bus stop route}
 ```
 
 ### Get all the operators known to RTPI
@@ -47,10 +45,9 @@ To get a list of all operators known to RTPI use the `getOperatorInformation` fu
 
 ```fsharp
 open RealTimePassengerInformation.Bus
-open RealTimePassengerInformation.Bus.Service.Client
 ...
 let (info:Async<Result<OperatorInformation.T, ApiError>>) =
-    OperatorInformation.getOperatorInformation defaultClient
+    OperatorInformation.getOperatorInformation Service.Client.defaultClient
 ```
 
 ### Get a list of real-time arrivals for a given bus stop
@@ -59,10 +56,9 @@ To get a list of the real-time arrivals expected at any bus stop use the `getRea
 
 ```fsharp
 open RealTimePassengerInformation.Bus
-open RealTimePassengerInformation.Bus.Service.Client
 ...
 let (info:Async<Result<RealTimeBusInformation.T, ApiError>>) =
-    RealTimeBusInformation.getRealTimeBusInformation defaultClient {bus stop ID}
+    RealTimeBusInformation.getRealTimeBusInformation Service.Client.defaultClient {bus stop ID}
 ```
 
 ### Get information about a given route (run by a given operator)
@@ -71,10 +67,9 @@ To get information about a route run by a given operator use the `getRouteInform
 
 ```fsharp
 open RealTimePassengerInformation.Bus
-open RealTimePassengerInformation.Bus.Service.Client
 ...
 let (info:Async<Result<RouteInformation.T list, ApiError>>) =
-    RealTimeBusInformation.getRouteInformation defaultClient {route} {operator reference code}
+    RealTimeBusInformation.getRouteInformation Service.Client.defaultClient {route} {operator reference code}
 ```
 
 This may be refactored in the future as a `list` result may not be required.
@@ -91,10 +86,9 @@ To get a summary of all routes run regardless of operator use the `getRouteListI
 
 ```fsharp
 open RealTimePassengerInformation.Bus
-open RealTimePassengerInformation.Bus.Service.Client
 ...
 let (info:Async<Result<RouteListInformation.T list, ApiError>>) =
-    RouteListInformation.getRouteListInformation defaultClient
+    RouteListInformation.getRouteListInformation Service.Client.defaultClient
 ```
 
 #### Filtering for a given operator
@@ -103,10 +97,9 @@ To get routes run by just one operator use the `getRouteListInformationForOperat
 
 ```fsharp
 open RealTimePassengerInformation.Bus
-open RealTimePassengerInformation.Bus.Service.Client
 ...
 let (info:Async<Result<RouteListInformation.T, ApiError>>) =
-    RouteListInformation.getRouteListInformationForOperator defaultClient {operator reference code}
+    RouteListInformation.getRouteListInformationForOperator Service.Client.defaultClient {operator reference code}
 ```
 
 If you just need information for one operator let this function do the filtering for you, as it is actually the RTPI service that does the filtering which lowers the amount of data transfered over the network.
