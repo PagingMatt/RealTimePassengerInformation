@@ -10,6 +10,8 @@ open Xunit.Sdk
 module Bus =
     // Use "O'Connell St, O'Connell Bridge" as a sample stop
     let sampleBusStop = 273
+    
+    let sampleRoute = "4"
 
     module BusStopInformation =
         open RealTimePassengerInformation.Bus.BusStopInformation
@@ -30,6 +32,20 @@ module Bus =
 
     module FullTimeTableInformation =
         open RealTimePassengerInformation.Bus.FullTimeTableInformation
+
+        [<Fact>]
+        let ``getFullTimetableInformation_E2E`` () =
+            let result =
+                getFullTimetableInformation defaultClient sampleBusStop sampleRoute
+                |> Async.RunSynchronously
+            match result with
+            | Error err ->
+                raise (
+                    new XunitException(
+                        String.Format(
+                            "E2E test returned failure result '{0}'.",
+                            err.ToString())))
+            | Ok _      -> ignore ()
 
     module OperatorInformation =
         open RealTimePassengerInformation.Bus.OperatorInformation
