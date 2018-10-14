@@ -90,3 +90,17 @@ module Bus =
 
     module RouteListInformation =
         open RealTimePassengerInformation.Bus.RouteListInformation
+
+        [<Fact>]
+        let ``getRouteListInformation_E2E`` () =
+            let result =
+                getRouteListInformation defaultClient
+                |> Async.RunSynchronously
+            match result with
+            | Error err ->
+                raise (
+                    new XunitException(
+                        String.Format(
+                            "E2E test returned failure result '{0}'.",
+                            err.ToString())))
+            | Ok _      -> ignore ()
