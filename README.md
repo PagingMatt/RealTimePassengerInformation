@@ -23,9 +23,11 @@ To get information about a single bus stop by its ID use the `getBusStopInformat
 open RealTimePassengerInformation.Bus
 open RealTimePassengerInformation.Service
 ...
+let busStopId : int = ...
+...
 let info:Async<Result<BusStopInformation.T, ApiError>> =
-    BusStopInformation.getBusStopInformation
-        Client.defaultClient {bus stop ID}
+        BusStopInformation.getBusStopInformation
+            Client.defaultClient busStopId
 ```
 
 Searching bus stops by operator and name are coming soon.
@@ -38,9 +40,13 @@ To get information about a given route at a given bus stop use the `getFullTimet
 open RealTimePassengerInformation.Bus
 open RealTimePassengerInformation.Service
 ...
+let busStopId : int = ...
+...
+let busStopRoute : string = ...
+...
 let info:Async<Result<FullTimeTableInformation.T, ApiError>> =
-    FullTimeTableInformation.getFullTimetableInformation
-        Client.defaultClient {bus stop ID} {bus stop route}
+        FullTimeTableInformation.getFullTimetableInformation
+            Client.defaultClient busStopId busStopRoute
 ```
 
 ### Get all the operators known to RTPI
@@ -52,8 +58,8 @@ open RealTimePassengerInformation.Bus
 open RealTimePassengerInformation.Service
 ...
 let info:Async<Result<OperatorInformation.T, ApiError>> =
-    OperatorInformation.getOperatorInformation
-        Client.defaultClient
+        OperatorInformation.getOperatorInformation
+            Client.defaultClient
 ```
 
 ### Get a list of real-time arrivals for a given bus stop
@@ -67,8 +73,8 @@ open RealTimePassengerInformation.Service
 let busStopId : int = ...
 ...
 let info:Async<Result<RealTimeBusInformation.T, ApiError>> =
-    RealTimeBusInformation.getRealTimeBusInformation
-        Client.defaultClient busStopId
+        RealTimeBusInformation.getRealTimeBusInformation
+            Client.defaultClient busStopId
 ```
 
 ### Get information about a given route (run by a given operator)
@@ -84,8 +90,8 @@ let route : string = ...
 let operatorReferenceCode : string = ...
 ...
 let info:Async<Result<RouteInformation.T list, ApiError>> =
-    RealTimeBusInformation.getRouteInformation
-        Client.defaultClient route operatorReferenceCode
+        RealTimeBusInformation.getRouteInformation
+            Client.defaultClient route operatorReferenceCode
 ```
 
 This may be refactored in the future as a `list` result may not be required.
@@ -105,8 +111,8 @@ open RealTimePassengerInformation.Bus
 open RealTimePassengerInformation.Service
 ...
 let info:Async<Result<RouteListInformation.T list, ApiError>> =
-    RouteListInformation.getRouteListInformation
-        Client.defaultClient
+        RouteListInformation.getRouteListInformation
+            Client.defaultClient
 ```
 
 #### Filtering for a given operator
@@ -120,8 +126,8 @@ open RealTimePassengerInformation.Service
 let operatorReferenceCode : string = ...
 ...
 let info:Async<Result<RouteListInformation.T, ApiError>> =
-    RouteListInformation.getRouteListInformationForOperator
-        Client.defaultClient operatorReferenceCode
+        RouteListInformation.getRouteListInformationForOperator
+            Client.defaultClient operatorReferenceCode
 ```
 
 If you just need information for one operator let this function do the filtering for you, as it is actually the RTPI service that does the filtering which lowers the amount of data transfered over the network.
