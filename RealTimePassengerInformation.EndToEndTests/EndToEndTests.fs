@@ -75,13 +75,14 @@ module Bus =
                 getRealTimeBusInformation defaultClient sampleBusStop
                 |> Async.RunSynchronously
             match result with
-            | Error err ->
+            | Error NoResults -> ignore () // Needed as buses are not arriving 24/7
+            | Ok _            -> ignore ()
+            | Error err       ->
                 raise (
                     new XunitException(
                         String.Format(
                             "E2E test returned failure result '{0}'.",
                             err.ToString())))
-            | Ok _      -> ignore ()
 
     module RouteInformation =
         open RealTimePassengerInformation.Bus.RouteInformation
