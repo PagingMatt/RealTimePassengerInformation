@@ -35,7 +35,7 @@ To get information about a given route at a given bus stop use the `getFullTimet
 ```fsharp
 open RealTimePassengerInformation.Bus
 ...
-let (info:Async<Result<FullTimeTableInformation.T, ApiError>>) =
+let info:Async<Result<FullTimeTableInformation.T, ApiError>> =
     FullTimeTableInformation.getFullTimetableInformation Service.Client.defaultClient {bus stop ID} {bus stop route}
 ```
 
@@ -46,7 +46,7 @@ To get a list of all operators known to RTPI use the `getOperatorInformation` fu
 ```fsharp
 open RealTimePassengerInformation.Bus
 ...
-let (info:Async<Result<OperatorInformation.T, ApiError>>) =
+let info:Async<Result<OperatorInformation.T, ApiError>> =
     OperatorInformation.getOperatorInformation Service.Client.defaultClient
 ```
 
@@ -57,7 +57,7 @@ To get a list of the real-time arrivals expected at any bus stop use the `getRea
 ```fsharp
 open RealTimePassengerInformation.Bus
 ...
-let (info:Async<Result<RealTimeBusInformation.T, ApiError>>) =
+let info:Async<Result<RealTimeBusInformation.T, ApiError>> =
     RealTimeBusInformation.getRealTimeBusInformation Service.Client.defaultClient {bus stop ID}
 ```
 
@@ -68,7 +68,7 @@ To get information about a route run by a given operator use the `getRouteInform
 ```fsharp
 open RealTimePassengerInformation.Bus
 ...
-let (info:Async<Result<RouteInformation.T list, ApiError>>) =
+let info:Async<Result<RouteInformation.T list, ApiError>> =
     RealTimeBusInformation.getRouteInformation Service.Client.defaultClient {route} {operator reference code}
 ```
 
@@ -87,7 +87,7 @@ To get a summary of all routes run regardless of operator use the `getRouteListI
 ```fsharp
 open RealTimePassengerInformation.Bus
 ...
-let (info:Async<Result<RouteListInformation.T list, ApiError>>) =
+let info:Async<Result<RouteListInformation.T list, ApiError>> =
     RouteListInformation.getRouteListInformation Service.Client.defaultClient
 ```
 
@@ -98,7 +98,7 @@ To get routes run by just one operator use the `getRouteListInformationForOperat
 ```fsharp
 open RealTimePassengerInformation.Bus
 ...
-let (info:Async<Result<RouteListInformation.T, ApiError>>) =
+let info:Async<Result<RouteListInformation.T, ApiError>> =
     RouteListInformation.getRouteListInformationForOperator Service.Client.defaultClient {operator reference code}
 ```
 
