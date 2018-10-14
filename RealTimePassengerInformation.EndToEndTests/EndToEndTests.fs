@@ -104,3 +104,17 @@ module Bus =
                             "E2E test returned failure result '{0}'.",
                             err.ToString())))
             | Ok _      -> ignore ()
+
+        [<Fact>]
+        let ``getRouteListInformationForOperator_E2E`` () =
+            let result =
+                getRouteListInformationForOperator defaultClient sampleOperatorReference
+                |> Async.RunSynchronously
+            match result with
+            | Error err ->
+                raise (
+                    new XunitException(
+                        String.Format(
+                            "E2E test returned failure result '{0}'.",
+                            err.ToString())))
+            | Ok _      -> ignore ()
