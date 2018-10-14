@@ -60,9 +60,11 @@ To get a list of the real-time arrivals expected at any bus stop use the `getRea
 ```fsharp
 open RealTimePassengerInformation.Bus
 ...
+let busStopId : int = ...
+...
 let info:Async<Result<RealTimeBusInformation.T, ApiError>> =
     RealTimeBusInformation.getRealTimeBusInformation
-        Service.Client.defaultClient {bus stop ID}
+        Service.Client.defaultClient busStopId
 ```
 
 ### Get information about a given route (run by a given operator)
@@ -72,9 +74,13 @@ To get information about a route run by a given operator use the `getRouteInform
 ```fsharp
 open RealTimePassengerInformation.Bus
 ...
+let route : string = ...
+...
+let operatorReferenceCode : string = ...
+...
 let info:Async<Result<RouteInformation.T list, ApiError>> =
     RealTimeBusInformation.getRouteInformation
-        Service.Client.defaultClient {route} {operator reference code}
+        Service.Client.defaultClient route operatorReferenceCode
 ```
 
 This may be refactored in the future as a `list` result may not be required.
@@ -104,9 +110,11 @@ To get routes run by just one operator use the `getRouteListInformationForOperat
 ```fsharp
 open RealTimePassengerInformation.Bus
 ...
+let operatorReferenceCode : string = ...
+...
 let info:Async<Result<RouteListInformation.T, ApiError>> =
     RouteListInformation.getRouteListInformationForOperator
-        Service.Client.defaultClient {operator reference code}
+        Service.Client.defaultClient operatorReferenceCode
 ```
 
 If you just need information for one operator let this function do the filtering for you, as it is actually the RTPI service that does the filtering which lowers the amount of data transfered over the network.
