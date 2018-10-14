@@ -77,7 +77,7 @@ module Bus =
         [<Fact>]
         let ``getRouteInformation_E2E`` () =
             let result =
-                getRouteInformation defaultClient sampleBusStop sampleRoute sampleOperatorReference
+                getRouteInformation defaultClient sampleRoute sampleOperatorReference
                 |> Async.RunSynchronously
             match result with
             | Error err ->
