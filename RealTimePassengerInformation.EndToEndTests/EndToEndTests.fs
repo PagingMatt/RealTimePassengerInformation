@@ -69,7 +69,19 @@ module Bus =
     module RealTimeBusInformation =
         open RealTimePassengerInformation.Bus.RealTimeBusInformation
 
-        // TODO - need to accept 'No results' as success.
+        [<Fact>]
+        let ``getRealTimeBusInformation_E2E`` () =
+            let result =
+                getRealTimeBusInformation defaultClient sampleBusStop
+                |> Async.RunSynchronously
+            match result with
+            | Error err ->
+                raise (
+                    new XunitException(
+                        String.Format(
+                            "E2E test returned failure result '{0}'.",
+                            err.ToString())))
+            | Ok _      -> ignore ()
 
     module RouteInformation =
         open RealTimePassengerInformation.Bus.RouteInformation
