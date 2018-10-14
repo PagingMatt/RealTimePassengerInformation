@@ -13,6 +13,8 @@ module Bus =
     
     let sampleRoute = "4"
 
+    let sampleOperatorReference = "bac"
+
     module BusStopInformation =
         open RealTimePassengerInformation.Bus.BusStopInformation
 
@@ -71,6 +73,20 @@ module Bus =
 
     module RouteInformation =
         open RealTimePassengerInformation.Bus.RouteInformation
+
+        [<Fact>]
+        let ``getRouteInformation_E2E`` () =
+            let result =
+                getRouteInformation defaultClient sampleBusStop sampleRoute sampleOperatorReference
+                |> Async.RunSynchronously
+            match result with
+            | Error err ->
+                raise (
+                    new XunitException(
+                        String.Format(
+                            "E2E test returned failure result '{0}'.",
+                            err.ToString())))
+            | Ok _      -> ignore ()
 
     module RouteListInformation =
         open RealTimePassengerInformation.Bus.RouteListInformation
