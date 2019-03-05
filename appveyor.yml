@@ -39,10 +39,8 @@ before_test:
   - cmd: dotnet build RealTimePassengerInformation.EndToEndTests/RealTimePassengerInformation.EndToEndTests.fsproj --no-restore /p:Configuration=Debug
 test_script:
   - cmd: dotnet test RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.fsproj --no-restore --no-build /p:Configuration=Debug /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./RealTimePassengerInformation.UnitTests.coverage.opencover.xml
-  - cmd: dotnet test RealTimePassengerInformation.EndToEndTests/RealTimePassengerInformation.EndToEndTests.fsproj --no-restore --no-build /p:Configuration=Debug /p:CollectCoverage=false
 after_test:
   - cmd: 7z a RealTimePassengerInformation_UnitTests.zip RealTimePassengerInformation.UnitTests/bin/ RealTimePassengerInformation.UnitTests/RealTimePassengerInformation.UnitTests.coverage.opencover.xml
-  - cmd: 7z a RealTimePassengerInformation_EndToEndTests.zip RealTimePassengerInformation.EndToEndTests/bin/
   - ps: |
       $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
       Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
@@ -53,9 +51,6 @@ artifacts:
     type: zip
   - path: RealTimePassengerInformation_UnitTests.zip
     name: RealTimePassengerInformation (Unit Tests)
-    type: zip
-  - path: RealTimePassengerInformation_EndToEndTests.zip
-    name: RealTimePassengerInformation (End-to-End Tests)
     type: zip
 before_deploy:
 after_deploy:
